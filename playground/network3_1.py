@@ -80,7 +80,7 @@ def load_data_shared(filename="../data/mnist.pkl.gz"):
 
 #### Main class used to construct and train networks
 class Network(object):
-    def __init__(self, layers, mini_batch_size, test_data):
+    def __init__(self, layers, mini_batch_size):
         """Takes a list of `layers`, describing the network architecture, and
         a value for the `mini_batch_size` to be used during training
         by stochastic gradient descent.
@@ -97,21 +97,21 @@ class Network(object):
             prev_layer, layer  = self.layers[j-1], self.layers[j]
             layer.set_inpt(
                 prev_layer.output, prev_layer.output_dropout, self.mini_batch_size)
-            print(layer.output)
         self.output = self.layers[-1].output
         self.output_dropout = self.layers[-1].output_dropout
-        ii = T.lscalar ( )  # mini-batch index
-        test_xx , test_yy = test_data
-        test_loaded_accuracy = theano.function (
-            [ ii ] , self.layers[ -1 ].accuracy ( self.y ) ,
+    def outputAccuracy(self, test_data):
+        ii = T.lscalar()  # mini-batch index
+        test_xx, test_yy = test_data
+        test_loaded_accuracy = theano.function(
+            [ii], self.layers[-1].accuracy(self.y),
             givens={
                 self.x:
-                    test_xx[ ii * self.mini_batch_size: (ii + 1) * self.mini_batch_size ] ,
+                    test_xx[ii * self.mini_batch_size: (ii + 1) * self.mini_batch_size],
                 self.y:
-                    test_yy[ ii * self.mini_batch_size: (ii + 1) * self.mini_batch_size ]
-            } )
+                    test_yy[ii * self.mini_batch_size: (ii + 1) * self.mini_batch_size]
+            })
         test_accuracy_loaded = np.mean (
-                [ test_loaded_accuracy ( j ) for j in xrange ( size(test_data)/mini_batch_size ) ] )
+                [ test_loaded_accuracy ( j ) for j in xrange ( size(test_data)/self.mini_batch_size ) ] )
         print('The corresponding test accuracy is {0:.2%}'.format (
                 test_accuracy_loaded ))
     def SGD(self, training_data, epochs, mini_batch_size, eta,
@@ -184,12 +184,6 @@ class Network(object):
                         gg = open ( 'savedSelflayers.saved' , 'wb' )
                         cPickle.dump ( self.layers , gg , protocol=cPickle.HIGHEST_PROTOCOL )
                         gg.close ()
-                        gg = open('savedSelfx.saved', 'wb')
-                        cPickle.dump(self.x, gg, protocol=cPickle.HIGHEST_PROTOCOL)
-                        gg.close()
-                        gg = open('savedSelfy.saved', 'wb')
-                        cPickle.dump(self.y, gg, protocol=cPickle.HIGHEST_PROTOCOL)
-                        gg.close()
                         if test_data:
                             test_accuracy = np.mean(
                                 [test_mb_accuracy(j) for j in xrange(num_test_batches)])

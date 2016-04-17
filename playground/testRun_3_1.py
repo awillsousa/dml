@@ -23,4 +23,5 @@ gg.close()
 
 net = Network([
 	layers[-2],
-        layers[-1] ], mini_batch_size, test_data)
+        layers[-1] ], mini_batch_size)
+net.outputAccuracy(test_data)
