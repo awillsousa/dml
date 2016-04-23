@@ -17,7 +17,7 @@ import theano
 
 
 
-gg = open('savedSelflayers.saved', 'rb')
+gg = open('savedSelflayers.p', 'rb')
 layers = six.moves.cPickle.load(gg)
 gg.close()
 

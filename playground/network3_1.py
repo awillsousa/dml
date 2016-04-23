@@ -181,7 +181,7 @@ class Network(object):
                         print("This is the best validation accuracy to date.")
                         best_validation_accuracy = validation_accuracy
                         best_iteration = iteration
-                        gg = open ( 'savedSelflayers.saved' , 'wb' )
+                        gg = open ( 'savedSelflayers.p' , 'wb' )
                         cPickle.dump ( self.layers , gg , protocol=cPickle.HIGHEST_PROTOCOL )
                         gg.close ()
                         if test_data:
