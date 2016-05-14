@@ -4,7 +4,10 @@ import cPickle
 import numpy as np
 import network3_2
 
-test_saved = cPickle.load( open("savedImage.p", "rb" ) )
+chosen_number = 9
+filepath = "../data/savedImage_" + str(chosen_number) + ".p"
+
+test_saved = cPickle.load( open(filepath, "rb" ) )
 test_x_saved, test_y_saved = test_saved
 
 filename = "../data/mnist.pkl.gz"
@@ -24,6 +27,7 @@ test_data_shared = shared_x, theano.tensor.cast(shared_y, "int32")
 gg = open('savedSelf.p', 'rb')
 savedNet = cPickle.load(gg)
 gg.close()
-out_1 = savedNet.singleOutputPrediction(test_data_shared, 0)
-print "The result is %s" % out_1
+out_1 = savedNet.singleOutputPrediction_1(test_data_shared, chosen_number)
+result = "correct" if out_1 == 1 else "Wrong"
+print "The prediction for " + str(chosen_number) + " is %s" % result
 

@@ -4,16 +4,18 @@ import numpy as np
 with gzip.open('../data/mnist.pkl.gz', 'rb') as f:
     train_set, valid_set, test_set = cPickle.load(f)
 
-chosen_index = 0
+chosen_index = 1250
 
 test_x_chosen = test_set[0][chosen_index]
 test_y_chosen = test_set[1][chosen_index]
 
 test_chosen = [test_set[0][chosen_index], test_set[1][chosen_index]]
 
-cPickle.dump(test_chosen, open( "savedImage.p", "wb" ) )
+filepath = "../data/savedImage_" + str(test_y_chosen) + ".p"
 
-test_saved = cPickle.load( open("savedImage.p", "rb" ) )
+cPickle.dump(test_chosen, open(filepath, "wb" ) )
+
+test_saved = cPickle.load( open(filepath, "rb" ) )
 
 test_x_saved, test_y_saved = test_saved
 

@@ -5,7 +5,7 @@ import cPickle
 import numpy as np
 import network3_2
 
-test_img = fli.processImg('/home/tito/soft/custom_data/openmachin/mine/orig','own_4-1.png')
+test_img = fli.processImg('/home/tito/soft/custom_data/openmachin/mine/orig','own_3.png')
 
 filename = "../data/mnist.pkl.gz"
 f = gzip.open(filename, 'rb')

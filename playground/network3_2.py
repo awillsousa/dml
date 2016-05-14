@@ -113,6 +113,20 @@ class Network(object):
                         ii / self.mini_batch_size) + 1) * self.mini_batch_size]
             })
         return test_loaded_accuracy(i)
+    def singleOutputPrediction_1(self, test_data, i):
+        ii = T.lscalar()  # mini-batch inden is ox
+        test_xx, test_yy = test_data
+        test_loaded_accuracy = theano.function(
+            [ii], self.layers[-1].single_accuracy(self.y, ii % self.mini_batch_size),
+            givens={
+                self.x:
+                    test_xx[(ii / self.mini_batch_size) * self.mini_batch_size: ((
+                                                                                     ii / self.mini_batch_size) + 1) * self.mini_batch_size],
+                self.y:
+                    test_yy[(ii / self.mini_batch_size) * self.mini_batch_size: ((
+                                                                                     ii / self.mini_batch_size) + 1) * self.mini_batch_size]
+            })
+        return test_loaded_accuracy(i)
     def outputAccuracy(self, test_data):
         ii = T.lscalar()  # mini-batch inden is ox
         test_xx, test_yy = test_data
