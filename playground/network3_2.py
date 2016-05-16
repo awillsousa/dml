@@ -119,14 +119,12 @@ class Network(object):
         ii = T.lscalar()  # mini-batch inden is ox
         test_xx, test_yy = test_data
         test_loaded_accuracy = theano.function(
-            [ii], self.layers[-1].single_accuracy(self.y, ii % self.mini_batch_size),
+            [ii], self.layers[-1].single_accuracy(self.y, ii),
             givens={
                 self.x:
-                    test_xx[(ii / self.mini_batch_size) * self.mini_batch_size: ((
-                                                                                     ii / self.mini_batch_size) + 1) * self.mini_batch_size],
+                    test_xx[ii:ii],
                 self.y:
-                    test_yy[(ii / self.mini_batch_size) * self.mini_batch_size: ((
-                                                                                     ii / self.mini_batch_size) + 1) * self.mini_batch_size]
+                    test_yy[ii:ii]
             })
         return test_loaded_accuracy(i)
     def outputAccuracy(self, test_data):
@@ -144,6 +142,22 @@ class Network(object):
                 [ test_loaded_accuracy ( j ) for j in xrange ( size(test_data)/self.mini_batch_size ) ] )
         print('The corresponding test accuracy is {0:.2%}'.format (
                 test_accuracy_loaded ))
+
+    def outputPrediction(self, test_data):
+        ii = T.lscalar()  # mini-batch inden is ox
+        test_xx, test_yy = test_data
+        test_loaded_prediction = theano.function(
+            [ii], self.layers[-1].accuracy(self.y),
+            givens={
+                self.x:
+                    test_xx[ii * self.mini_batch_size: (ii + 1) * self.mini_batch_size],
+                self.y:
+                    test_yy[ii * self.mini_batch_size: (ii + 1) * self.mini_batch_size]
+            })
+        test_accuracy_loaded = np.mean(
+            [test_loaded_accuracy(j) for j in xrange(size(test_data) / self.mini_batch_size)])
+        print('The corresponding test accuracy is {0:.2%}'.format(
+            test_accuracy_loaded))
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             validation_data, test_data, lmbda=0.0):
         """Train the network using mini-batch stochastic gradient descent."""
@@ -188,6 +202,15 @@ class Network(object):
                 self.y:
                 test_y[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
             })
+        test_mb_accuracy_single = theano.function(
+            # Testing the last layer output. The accuracy function is defined by the last layer
+            [i], self.layers[-1].single_accuracy(self.y, i),
+            givens={
+                self.x:
+                    test_x[i:i],
+                self.y:
+                    test_y[i:i]
+            })
         self.test_mb_predictions = theano.function(
             [i], self.layers[-1].y_out,
             givens={
@@ -220,6 +243,7 @@ class Network(object):
                             print('The corresponding test accuracy is {0:.2%}'.format(
                                 test_accuracy))
         print("Finished training network.")
+        k = 1234
         print("Best validation accuracy of {0:.2%} obtained at iteration {1}".format(
             best_validation_accuracy, best_iteration))
         print("Corresponding test accuracy of {0:.2%}".format(test_accuracy))
@@ -307,6 +331,9 @@ class FullyConnectedLayer(object):
     def single_accuracy(self, y, i):
         "Return the accuracy for the mini-batch."
         return T.eq(y[i], self.y_out[i])
+    def accuracy_single(self, y):
+        "Return the accuracy for the mini-batch."
+        return T.eq(y, self.y_out)
 
 class SoftmaxLayer(object):
 
