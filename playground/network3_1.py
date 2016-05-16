@@ -1,3 +1,5 @@
+# Adapted from https://github.com/mnielsen/neural-networks-and-deep-learning/blob/master/src/network3.py
+
 """network3.py
 ~~~~~~~~~~~~~~
 

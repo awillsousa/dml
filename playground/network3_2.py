@@ -1,3 +1,5 @@
+# Adapted from https://github.com/mnielsen/neural-networks-and-deep-learning/blob/master/src/network3.py
+
 """network3.py
 ~~~~~~~~~~~~~~
 
@@ -335,6 +337,7 @@ class SoftmaxLayer(object):
         return T.mean(T.eq(y, self.y_out))
     def single_accuracy(self, y, i):
         "Return the accuracy for the mini-batch."
+        # print "y[" + str(i) + "] = " + str(y[i]) + " - self.y_out[" + str(i) + "] = " + str(self.y_out[i])
         return T.eq(y[i], self.y_out[i])
 
 
