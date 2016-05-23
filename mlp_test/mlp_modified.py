@@ -32,6 +32,8 @@ import timeit
 
 import numpy
 
+import fli
+
 import theano
 import theano.tensor as T
 import cPickle as pickle
@@ -442,7 +444,7 @@ def predict_mlp_all_fast(filename):
     for j in xrange (10000):
         pred = testfunc(j)
         if not(pred[0] == pred[1]):
-            print ("The prediction for " + str(pred[0]) + " at index " + str(j) + " is false. The correct value is " + str(pred[1]) +".")
+            print ("The predicted value " + str(pred[0]) + " at index " + str(j) + " is wrong. The correct value is " + str(pred[1]) +".")
             nerrors += 1
 
     print ('There are ' + str(nerrors) + ' errors.')
@@ -456,6 +458,22 @@ def testfunction(i, params, test_set_x, test_set_y):
     y_pred = T.argmax(p_y_given_x, axis=1)
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
     return testfunc(i)
+
+def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
+    gg = open(modelFilename, 'rb')
+    params = pickle.load(gg)
+    gg.close()
+
+    test_img = fli.processImg('../data/custom/', testImgFilename)
+    x = T.matrix('x')
+    hidden_output = T.tanh(T.dot(test_img, params[0]) + params[1])
+    final_output = T.dot(hidden_output, params[2]) + params[3]
+    p_y_given_x = T.nnet.softmax(final_output)
+    y_pred = T.argmax(p_y_given_x, axis=1)
+    testfunc = theano.function([], [y_pred[0]])
+    prediction = testfunc()[0]
+    correct = (testImgvalue == prediction)
+    print('The prediction ' + str(testfunc()[0]) + ' for ' + testImgFilename + '  is ' + str(correct) + '.')
 
 def predict_mlp(filename, i):
     """
@@ -471,15 +489,6 @@ def predict_mlp(filename, i):
     dataset='mnist.pkl.gz'
     datasets = load_data(dataset)
     test_set_x, test_set_y = datasets[2]
-
-    # index = T.lscalar()
-    # x = T.matrix('x')
-    # hidden_output = T.tanh(T.dot(test_set_x[index], params[0]) + params[1])
-    # final_output = T.dot(hidden_output, params[2]) + params[3]
-    # p_y_given_x = T.nnet.softmax(final_output)
-    # y_pred = T.argmax(p_y_given_x, axis=1)
-    # testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
-    # return testfunc(i)
 
     return testfunction(i, params, test_set_x, test_set_y)
 
