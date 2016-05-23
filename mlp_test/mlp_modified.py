@@ -403,6 +403,59 @@ def load_data(dataset):
             (test_set_x, test_set_y)]
     return rval
 
+def predict_mlp_all(filename):
+    gg = open(filename, 'rb')
+    params = pickle.load(gg)
+    gg.close()
+
+    dataset = 'mnist.pkl.gz'
+    datasets = load_data(dataset)
+    test_set_x, test_set_y = datasets[2]
+
+
+    nerrors = 0
+    for j in xrange (10000):
+        pred = testfunction(j, params, test_set_x, test_set_y)
+        if not(pred[0] == pred[1]):
+            print ("The prediction for " + str(pred[0]) + " is false")
+            nerrors += 1
+
+    print ('There are' + str(nerrors) + ' errors.')
+
+def predict_mlp_all_fast(filename):
+    gg = open(filename, 'rb')
+    params = pickle.load(gg)
+    gg.close()
+
+    dataset = 'mnist.pkl.gz'
+    datasets = load_data(dataset)
+    test_set_x, test_set_y = datasets[2]
+
+    index = T.lscalar()
+    x = T.matrix('x')
+    hidden_output = T.tanh(T.dot(test_set_x[index], params[0]) + params[1])
+    final_output = T.dot(hidden_output, params[2]) + params[3]
+    p_y_given_x = T.nnet.softmax(final_output)
+    y_pred = T.argmax(p_y_given_x, axis=1)
+    testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
+    nerrors = 0
+    for j in xrange (10000):
+        pred = testfunc(j)
+        if not(pred[0] == pred[1]):
+            print ("The prediction for " + str(pred[0]) + " at index " + str(j) + " is false. The correct value is " + str(pred[1]) +".")
+            nerrors += 1
+
+    print ('There are ' + str(nerrors) + ' errors.')
+
+def testfunction(i, params, test_set_x, test_set_y):
+    index = T.lscalar()
+    x = T.matrix('x')
+    hidden_output = T.tanh(T.dot(test_set_x[index], params[0]) + params[1])
+    final_output = T.dot(hidden_output, params[2]) + params[3]
+    p_y_given_x = T.nnet.softmax(final_output)
+    y_pred = T.argmax(p_y_given_x, axis=1)
+    testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
+    return testfunc(i)
 
 def predict_mlp(filename, i):
     """
@@ -419,14 +472,16 @@ def predict_mlp(filename, i):
     datasets = load_data(dataset)
     test_set_x, test_set_y = datasets[2]
 
-    index = T.lscalar()
-    x = T.matrix('x')
-    hidden_output = T.dot(test_set_x[index], params[0]) + params[1]
-    final_output = T.dot(hidden_output, params[2]) + params[3]
-    p_y_given_x = T.nnet.softmax(final_output)
-    y_pred = T.argmax(p_y_given_x, axis=1)
-    testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
-    return testfunc(i)
+    # index = T.lscalar()
+    # x = T.matrix('x')
+    # hidden_output = T.tanh(T.dot(test_set_x[index], params[0]) + params[1])
+    # final_output = T.dot(hidden_output, params[2]) + params[3]
+    # p_y_given_x = T.nnet.softmax(final_output)
+    # y_pred = T.argmax(p_y_given_x, axis=1)
+    # testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
+    # return testfunc(i)
+
+    return testfunction(i, params, test_set_x, test_set_y)
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
