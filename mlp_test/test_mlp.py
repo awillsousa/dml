@@ -2,7 +2,7 @@ import mlp_modified as mlp
 
 #Uncomment to test
 
-filename = 'best_model_mlp_1000.pkl'
+filename = 'best_model_mlp_100.pkl'
 
 # Test 1
 # index = 9
@@ -20,7 +20,7 @@ path = '../data/custom'
 files = [f for f in listdir(path) if isfile(join(path, f))]
 for file in files:
     test_img_value = filter(str.isdigit, file)
-    mlp.load_and_predict_custom_image('best_model_mlp_100.pkl',file, int(test_img_value))
+    mlp.load_and_predict_custom_image(filename,file, int(test_img_value))
 
 
 # Test 3
