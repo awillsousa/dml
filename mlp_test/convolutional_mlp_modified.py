@@ -1,6 +1,5 @@
 # Modified from https://github.com/lisa-lab/DeepLearningTutorials/blob/master/code/convolutional_mlp.py
 # added functionality for saving the parameteres, reloading and testing the model on custom images.
-# See also http://stackoverflow.com/questions/37435904/obsolete-erroneous-code-in-convolutional-mlp-py-at-deeplearningtutorials
 """This tutorial introduces the LeNet5 neural network architecture
 using Theano.  LeNet5 is a convolutional neural network, good for
 classifying images. This tutorial shows how to build the architecture,
@@ -38,14 +37,14 @@ import cPickle as pickle
 import theano
 import theano.tensor as T
 from theano.tensor.signal import downsample
-from theano.tensor.nnet.conv import conv2d
+from theano.tensor.nnet import conv2d
 
 from mlp_modified import HiddenLayer, LogisticRegression, load_data
 
 import fli
 
 activation_f=T.tanh
-n_epochs_g=20
+n_epochs_g=1
 
 
 class LeNetConvPoolLayer(object):
@@ -103,7 +102,7 @@ class LeNetConvPoolLayer(object):
             input=input,
             filters=self.W,
             filter_shape=filter_shape,
-            image_shape=image_shape
+            input_shape=image_shape
         )
 
         # downsample each feature map individually, using maxpooling
@@ -383,7 +382,7 @@ def predict_custom_image(modelfilename, testImgFilename='own_0.png', activation=
     conv_out_0 = conv2d(
         input=layer0_input,
         filters=params[6],
-        image_shape=(batch_size, 1, 28, 28),
+        input_shape=(batch_size, 1, 28, 28),
         filter_shape=(nkerns[0], 1, 5, 5)
     )
 
@@ -399,7 +398,7 @@ def predict_custom_image(modelfilename, testImgFilename='own_0.png', activation=
     conv_out_1 = conv2d(
         input=output_0,
         filters=params[4],
-        image_shape=(batch_size, nkerns[0], 12, 12),
+        input_shape=(batch_size, nkerns[0], 12, 12),
         filter_shape=(nkerns[1], nkerns[0], 5, 5),
     )
 
