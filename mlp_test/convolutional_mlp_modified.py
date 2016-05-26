@@ -44,7 +44,7 @@ from mlp_modified import HiddenLayer, LogisticRegression, load_data
 import fli
 
 activation_f=T.tanh
-n_epochs_g=1
+n_epochs_g=20
 
 
 class LeNetConvPoolLayer(object):
