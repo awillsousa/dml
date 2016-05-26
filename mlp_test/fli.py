@@ -1,4 +1,4 @@
-#This code is based on https://github.com/openmachinesblog/tensorflow-mnist/blob/master/mnist.py by
+# from https://github.com/openmachinesblog/tensorflow-mnist/blob/master/mnist.py by
 
 import cv2
 import numpy as np

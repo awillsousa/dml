@@ -39,6 +39,8 @@ import theano.tensor as T
 import cPickle as pickle
 import gzip
 
+activation_f=T.tanh
+n_epochs_g=1000
 
 # start-snippet-2
 class MLP(object):
@@ -84,7 +86,7 @@ class MLP(object):
             input=input,
             n_in=n_in,
             n_out=n_hidden,
-            activation=T.tanh
+            activation=activation_f
         )
 
         # The logistic regression layer gets as input the hidden units
@@ -132,7 +134,7 @@ class MLP(object):
 # start-snippet-1
 class HiddenLayer(object):
     def __init__(self, rng, input, n_in, n_out, W=None, b=None,
-                 activation=T.tanh):
+                 activation=activation_f):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
@@ -435,7 +437,7 @@ def predict_mlp_all_fast(filename):
 
     index = T.lscalar()
     x = T.matrix('x')
-    hidden_output = T.tanh(T.dot(test_set_x[index], params[0]) + params[1])
+    hidden_output = activation_f(T.dot(test_set_x[index], params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
@@ -452,7 +454,7 @@ def predict_mlp_all_fast(filename):
 def testfunction(i, params, test_set_x, test_set_y):
     index = T.lscalar()
     x = T.matrix('x')
-    hidden_output = T.tanh(T.dot(test_set_x[index], params[0]) + params[1])
+    hidden_output = activation_f(T.dot(test_set_x[index], params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
@@ -466,7 +468,7 @@ def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
 
     test_img = fli.processImg('../data/custom/', testImgFilename)
     x = T.matrix('x')
-    hidden_output = T.tanh(T.dot(test_img, params[0]) + params[1])
+    hidden_output = activation_f(T.dot(test_img, params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
@@ -493,7 +495,7 @@ def predict_mlp(filename, i):
     return testfunction(i, params, test_set_x, test_set_y)
 
 
-def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
+def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g,
              dataset='mnist.pkl.gz', batch_size=20, n_hidden=500):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer

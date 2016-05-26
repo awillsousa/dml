@@ -1,7 +1,8 @@
 import mlp_modified as mlp
 
+#Uncomment to test
 
-filename = 'best_model_mlp_100.pkl'
+filename = 'best_model_mlp_2.pkl'
 
 # Test 1
 # index = 9
