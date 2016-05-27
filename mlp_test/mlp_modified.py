@@ -1,5 +1,6 @@
 ## modified from https://github.com/lisa-lab/DeepLearningTutorials/blob/master/code/mlp.py
 ## added functionality for saving the parameteres, reloading and testing the model.
+# (c) 2010--2015, Deep Learning Tutorials Development Team
 """
 This tutorial introduces the multilayer perceptron using Theano.
 
