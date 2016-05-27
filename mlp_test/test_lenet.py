@@ -1,7 +1,7 @@
 import cPickle as pickle
 import convolutional_mlp_modified as cmlp
 
-paramsFilename = 'best_model_convolutional_mlp_100.pkl'
+paramsFilename = 'best_model_convolutional_mlp_250.pkl'
 
 # Test 1
 from os import listdir
