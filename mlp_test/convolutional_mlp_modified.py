@@ -1,4 +1,5 @@
 # Modified from https://github.com/lisa-lab/DeepLearningTutorials/blob/master/code/convolutional_mlp.py
+# (c) 2010--2015, Deep Learning Tutorials Development Team
 # added functionality for saving the parameteres, reloading and testing the model on custom images.
 """This tutorial introduces the LeNet5 neural network architecture
 using Theano.  LeNet5 is a convolutional neural network, good for
@@ -44,7 +45,7 @@ from mlp_modified import HiddenLayer, LogisticRegression, load_data
 import fli
 
 activation_f=T.tanh
-n_epochs_g=20
+n_epochs_g=250
 
 
 class LeNetConvPoolLayer(object):
