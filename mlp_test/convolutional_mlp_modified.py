@@ -363,17 +363,77 @@ if __name__ == '__main__':
 def experiment(state, channel):
     evaluate_lenet5(state.learning_rate, dataset=state.dataset)
 
-def predict_custom_image(modelfilename, testImgFilename='own_0.png', activation= T.tanh):
-    test_img_value = filter(str.isdigit, testImgFilename)
-
-    test_img = fli.processImg('../data/custom/', testImgFilename)
-    x = T.matrix('x')
+def predict_all_mnist_test_images(modelfilename, activation=activation_f):
 
     gg = open(modelfilename, 'rb')
     params = pickle.load(gg)
     gg.close()
 
-    numLayers = len(params) // 2
+
+    nkerns = [20, 50]
+    batch_size = 1
+    poolsize = (2, 2)
+
+    dataset = 'mnist.pkl.gz'
+    datasets = load_data(dataset)
+    test_set_x, test_set_y = datasets[2]
+
+    index = T.lscalar()
+    layer0_input = test_set_x[index].reshape((batch_size, 1, 28, 28))
+
+    conv_out_0 = conv2d(
+        input=layer0_input,
+        filters=params[6],
+        input_shape=(batch_size, 1, 28, 28),
+        filter_shape=(nkerns[0], 1, 5, 5)
+    )
+
+    # downsample each feature map individually, using maxpooling
+    pooled_out_0 = downsample.max_pool_2d(
+        input=conv_out_0,
+        ds=poolsize,
+        ignore_border=True
+    )
+
+    output_0 = activation(pooled_out_0 + params[7].dimshuffle('x', 0, 'x', 'x'))
+
+    conv_out_1 = conv2d(
+        input=output_0,
+        filters=params[4],
+        input_shape=(batch_size, nkerns[0], 12, 12),
+        filter_shape=(nkerns[1], nkerns[0], 5, 5),
+    )
+
+    # downsample each feature map individually, using maxpooling
+    pooled_out_1 = downsample.max_pool_2d(
+        input=conv_out_1,
+        ds=poolsize,
+        ignore_border=True
+    )
+
+    output_1 = activation(pooled_out_1 + params[5].dimshuffle('x', 0, 'x', 'x'))
+    output_2 = activation(T.dot(output_1.flatten(2), params[2]) + params[3])
+
+    final_output = T.dot(output_2, params[0]) + params[1]
+    p_y_given_x = T.nnet.softmax(final_output)
+    y_pred = T.argmax(p_y_given_x, axis=1)
+    testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
+    nerrors = 0
+    for j in xrange(10000):
+        prediction = testfunc(j)
+        correct = (prediction[0] == prediction[1])
+        if correct == False:
+            nerrors += 1
+            print('The prediction ' + str(prediction[0]) + ' for index ' + str(j) + '  is wrong . The correct value is '
+                  + str(prediction[1]) + '.')
+    print('There are ' + str(nerrors) + ' errors.')
+
+def predict_custom_image(params, testImgFilename='own_0.png', activation= activation_f):
+
+    test_img_value = filter(str.isdigit, testImgFilename)
+
+    test_img = fli.processImg('../data/custom/', testImgFilename)
+
     nkerns = [20, 50]
     batch_size = 1
     poolsize = (2, 2)
