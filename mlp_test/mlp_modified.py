@@ -691,18 +691,17 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
+                    savedFileName = 'best_model_mlp_' + str(n_epochs) + '.pkl'
+                    gg = open(savedFileName, 'wb')
+                    pickle.dump(classifier.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
+                    gg.close()
+                    print('Best model params saved as ' + savedFileName)
 
             if patience <= iter:
                 done_looping = True
                 break
 
     end_time = timeit.default_timer()
-    savedFileName = 'best_model_mlp_' + str(n_epochs) + '.pkl'
-
-    gg = open(savedFileName, 'wb')
-    pickle.dump(classifier.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
-    gg.close()
-    print('Best model params saved as ' + savedFileName)
     print(('Optimization complete. Best validation score of %f %% '
            'obtained at iteration %i, with test performance %f %%') %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
