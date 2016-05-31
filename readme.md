@@ -13,6 +13,6 @@ Then drop the .png files containing your images into the *data/custom* directory
 Change the files titles so that they contain the target digit. Examples in data/custom are provided.
 Run *mlp_test/test_*.py*.
 
-The same holds for *SdA_modified.py*, where the the model parameters are saved into a file named *best_model_sda_(pretraining_epochs)_(training_epochs).pkl*
+Similarly for *SdA_modified.py* the the model parameters are saved into a file named *best_model_sda_(pretraining_epochs)_(training_epochs).pkl*
 
 The *data/transform* directory contains the tranformed (MNISTized ...) files which are then processed by the model.
