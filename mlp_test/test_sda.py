@@ -3,7 +3,7 @@ from os import listdir
 from os.path import isfile, join
 from SdA_modified import predict_all_mnist_test_images_sda,predict_custom_image_sda
 
-paramsFilename = 'best_model_sda_5_50.pkl'
+paramsFilename = 'best_model_sda_3_15.pkl'
 
 #Test 1
 gg = open(paramsFilename, 'rb')
