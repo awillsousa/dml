@@ -31,6 +31,7 @@ __docformat__ = 'restructedtext en'
 import os
 import sys
 import timeit
+import logging
 
 import numpy
 
@@ -41,8 +42,12 @@ import theano.tensor as T
 import cPickle as pickle
 import gzip
 
+logfilename='mlp_modified.log'
+logging.basicConfig(filename=logfilename,level=logging.INFO)
+
 activation_f=T.tanh
-n_epochs_g=1000
+n_epochs_g=100
+randomInit = True
 
 # start-snippet-2
 class MLP(object):
@@ -233,20 +238,25 @@ class LogisticRegression(object):
         """
         # start-snippet-1
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
-        self.W = theano.shared(
-            value=numpy.zeros(
-                (n_in, n_out),
+        initW = numpy.zeros(
+                    (n_in, n_out),
+                    dtype=theano.config.floatX
+                )
+        initB = numpy.zeros(
+                (n_out,),
                 dtype=theano.config.floatX
-            ),
+            )
+        if randomInit:
+            initW[:] = numpy.random.randn(*initW.shape)
+            initB[:] = numpy.random.randn(*initB.shape)
+        self.W = theano.shared(
+            value= initW,
             name='W',
             borrow=True
         )
         # initialize the biases b as a vector of n_out 0s
         self.b = theano.shared(
-            value=numpy.zeros(
-                (n_out,),
-                dtype=theano.config.floatX
-            ),
+            value=initB,
             name='b',
             borrow=True
         )
@@ -469,7 +479,6 @@ def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
     gg.close()
 
     test_img = fli.processImg('../data/custom/', testImgFilename)
-    x = T.matrix('x')
     hidden_output = activation_f(T.dot(test_img, params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
@@ -691,7 +700,11 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
-                    savedFileName = 'best_model_mlp_' + str(n_epochs) + '.pkl'
+                    rand = ''
+                    if randomInit:
+                        rand = '_rand'
+                    savedFileName = 'best_model_mlp_' + str(n_epochs) + rand + '.pkl'
+
                     gg = open(savedFileName, 'wb')
                     pickle.dump(classifier.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
                     gg.close()
@@ -702,6 +715,12 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                 break
 
     end_time = timeit.default_timer()
+    if not os.path.getsize(logfilename)>0 :
+        logging.info('end_time;n_epochs;randomInit;best_validation_score;iteration;test_score')
+    logging.info(str(end_time)+';'+str(n_epochs) + ';' + str(randomInit) +
+            ';' + str(best_validation_loss * 100) +
+            ';' + str(best_iter + 1) +
+            ';' + str(test_score * 100.))
     print(('Optimization complete. Best validation score of %f %% '
            'obtained at iteration %i, with test performance %f %%') %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
