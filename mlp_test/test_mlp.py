@@ -12,7 +12,6 @@ print('The prediction for index '+str(index) + ' is ' + str(pred[0])+'.')
 print ('The correct value is ' + str(pred[1])+'.')
 print ('The prediction is ' + str(correct)+'.')
 
-
 # Test 2
 from os import listdir
 from os.path import isfile, join

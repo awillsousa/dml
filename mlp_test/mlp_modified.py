@@ -42,12 +42,13 @@ import theano.tensor as T
 import cPickle as pickle
 import gzip
 
-logfilename='mlp_modified.log'
+logfilename='../logs/mlp_modified.log'
 logging.basicConfig(filename=logfilename,level=logging.INFO)
 
 activation_f=T.tanh
-n_epochs_g=100
+n_epochs_g=500
 randomInit = True
+saveepochs = numpy.arange(0,n_epochs_g+1,10)
 
 # start-snippet-2
 class MLP(object):
@@ -679,6 +680,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                     )
                 )
 
+
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
                     #improve patience if loss improvement is good enough
@@ -686,7 +688,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                         this_validation_loss < best_validation_loss *
                         improvement_threshold
                     ):
-                        patience = max(patience, iter * patience_increase)
+                        patience = max(patience, iter *patience_increase)
 
                     best_validation_loss = this_validation_loss
                     best_iter = iter
@@ -700,27 +702,15 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
-                    rand = ''
-                    if randomInit:
-                        rand = '_rand'
-                    savedFileName = 'best_model_mlp_' + str(n_epochs) + rand + '.pkl'
-
-                    gg = open(savedFileName, 'wb')
-                    pickle.dump(classifier.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
-                    gg.close()
-                    print('Best model params saved as ' + savedFileName)
 
             if patience <= iter:
                 done_looping = True
                 break
 
+        if epoch in saveepochs:
+            save_model(classifier.params, epoch, best_validation_loss, best_iter, test_score)
+
     end_time = timeit.default_timer()
-    if not os.path.getsize(logfilename)>0 :
-        logging.info('end_time;n_epochs;randomInit;best_validation_score;iteration;test_score')
-    logging.info(str(end_time)+';'+str(n_epochs) + ';' + str(randomInit) +
-            ';' + str(best_validation_loss * 100) +
-            ';' + str(best_iter + 1) +
-            ';' + str(test_score * 100.))
     print(('Optimization complete. Best validation score of %f %% '
            'obtained at iteration %i, with test performance %f %%') %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
@@ -728,6 +718,24 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
            os.path.split(__file__)[1] +
            ' ran for %.2fm' % ((end_time - start_time) / 60.)), file=sys.stderr)
 
+def save_model(params, n_epochs, best_validation_loss, best_iter, test_score):
+    time = timeit.default_timer()
+    if not os.path.getsize(logfilename) > 0:
+        logging.info('end_time;n_epochs;randomInit;best_validation_score;iteration;test_score;activation')
+    logging.info(str(time) + ';' + str(n_epochs) + ';' + str(randomInit) +
+                 ';' + str(best_validation_loss * 100) +
+                 ';' + str(best_iter + 1) +
+                 ';' + str(test_score * 100.)+
+                 ';' + activation_f.name
+                 )
+    rand = ''
+    if randomInit:
+        rand = '_rand'
+    savedFileName = '../data/models/best_model_mlp_' + str(n_epochs) + rand + '.pkl'
+    gg = open(savedFileName, 'wb')
+    pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
+    gg.close()
+    print('Best model params saved as ' + savedFileName)
 
 if __name__ == '__main__':
     test_mlp()
