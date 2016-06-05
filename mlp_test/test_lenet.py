@@ -1,7 +1,7 @@
 import cPickle as pickle
 from convolutional_mlp_modified import predict_all_mnist_test_images, predict_custom_image
 
-paramsFilename = 'best_model_convolutional_mlp_250.pkl'
+paramsFilename = '../data/models/best_model_convolutional_mlp_250.pkl'
 
 # Test 1
 from os import listdir

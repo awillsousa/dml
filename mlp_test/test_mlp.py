@@ -2,7 +2,7 @@ from  mlp_modified import predict_mlp,  predict_mlp_all_fast, load_and_predict_c
 
 #Uncomment to test
 
-filename = 'best_model_mlp_500.pkl'
+filename = '../data/models/best_model_mlp_500_rand.pkl'
 
 # Test 1
 index = 9

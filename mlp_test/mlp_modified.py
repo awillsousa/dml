@@ -557,8 +557,10 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
     x = T.matrix('x')  # the data is presented as rasterized images
     y = T.ivector('y')  # the labels are presented as 1D vector of
                         # [int] labels
-
-    rng = numpy.random.RandomState(1234)
+    randgen = 1234
+    if randomInit:
+        randgen = 3421
+    rng = numpy.random.RandomState(randgen)
 
     # construct the MLP class
     classifier = MLP(

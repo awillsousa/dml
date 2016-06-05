@@ -16,3 +16,5 @@ Run *mlp_test/test_*.py*.
 Similarly for *SdA_modified.py* the the model parameters are saved into a file named *best_model_sda_(pretraining_epochs)_(training_epochs).pkl*
 
 The *data/transform* directory contains the tranformed (MNISTized ...) files which are then processed by the model.
+
+More at http://deepmachinelearning.blogspot.com
