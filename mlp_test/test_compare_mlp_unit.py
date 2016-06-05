@@ -19,6 +19,10 @@ class DistanceTestCase(unittest.TestCase):
     def testDistanceBetweenRandModelsAndRandTarget(self):
         plot_distances_from_target(self.randfiles[-1], self.randfiles)
 
+    def testDistanceBetweenRandModelsAndItself(self):
+        distances = calculate_distance_pairs(self.randfiles, self.randfiles)
+        plot_distance_pairs(distances)
+
 
 if __name__ == '__main__':
     unittest.main()
