@@ -50,7 +50,7 @@ from mlp_modified import LogisticRegression,HiddenLayer,load_data
 from dA import dA
 
 pretraining_epochs_g = 3
-training_epochs_g = 15
+training_epochs_g = 50
 activation_g=T.nnet.sigmoid
 
 # start-snippet-1
@@ -474,16 +474,18 @@ def test_SdA(finetune_lr=0.1, pretraining_epochs=pretraining_epochs_g,
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
-                    epochs_str = str(pretraining_epochs) + '_' + str(training_epochs)
-                    savedFileName = 'best_model_sda_' + epochs_str + '.pkl'
-                    gg = open(savedFileName, 'wb')
-                    pickle.dump(sda.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
-                    gg.close()
-                    print('Best model params saved as ' + savedFileName)
+
 
             if patience <= iter:
                 done_looping = True
                 break
+
+        epochs_str = str(pretraining_epochs) + '_' + str(epoch)
+        savedFileName = '../data/models/best_model_sda_' + epochs_str + '.pkl'
+        gg = open(savedFileName, 'wb')
+        pickle.dump(sda.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
+        gg.close()
+        print('Best model params saved as ' + savedFileName)
 
     end_time = timeit.default_timer()
 

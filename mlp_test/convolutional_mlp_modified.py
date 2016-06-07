@@ -336,7 +336,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
-                    savedFileName = 'best_model_convolutional_mlp_' + str(n_epochs) + '.pkl'
+                    savedFileName = '../data/models/best_model_convolutional_mlp_' + str(n_epochs) + '.pkl'
 
                     gg = open(savedFileName, 'wb')
                     pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
