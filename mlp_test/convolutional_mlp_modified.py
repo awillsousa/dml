@@ -45,7 +45,8 @@ from mlp_modified import HiddenLayer, LogisticRegression, load_data
 import fli
 
 activation_f=T.tanh
-n_epochs_g=25
+n_epochs_g=250
+saveepochs = numpy.arange(0,n_epochs_g+1,5)
 
 
 class LeNetConvPoolLayer(object):
@@ -336,16 +337,17 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
-                    savedFileName = '../data/models/best_model_convolutional_mlp_' + str(n_epochs) + '.pkl'
-
-                    gg = open(savedFileName, 'wb')
-                    pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
-                    gg.close()
-                    print('Best model params saved as ' + savedFileName)
 
             if patience <= iter:
                 done_looping = True
                 break
+
+        if epoch in saveepochs:
+            savedFileName = '../data/models/best_model_convolutional_mlp_' + str(epoch) + '.pkl'
+            gg = open(savedFileName, 'wb')
+            pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
+            gg.close()
+            print('Best model params saved as ' + savedFileName)
 
     end_time = timeit.default_timer()
 
