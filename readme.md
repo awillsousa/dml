@@ -2,7 +2,7 @@
 
 The script *mlp_test/mlp_modified.py* is based on the [Multilayer perceptron](https://github.com/lisa-lab/DeepLearningTutorials/blob/master/code/mlp.py).
 The script *mlp_test/convolutional_mlp_modified.py* is based on the [Deep Convolutional Network](https://github.com/lisa-lab/DeepLearningTutorials/blob/master/code/convolutional_mlp.py) - a simplified version of LeNet5.
-Some functionality relying on [openmachinesblog](https://github.com/openmachinesblog/tensorflow-mnist/blob/master/mnist.py) code is used..
+Some functionality relying on [openmachinesblog](https://github.com/openmachinesblog/tensorflow-mnist/blob/master/mnist.py) code is used.
 The scripts save the model parameters into a file named *best_model_mlp_(n-epochs).pkl* for *mlp_test* and *best_model_convolutional_mlp_(n-epochs).pkl* for *convolutional_mlp_modified*.
 They also provide methods to load the saved parameters into the model and make predictions on custom images as well as onimages from the MNIST set.
 The usage is illustrated in *mlp_test/test_mlp.py* and *mlp_test/test_lenet.py* respectively.

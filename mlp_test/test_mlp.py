@@ -17,9 +17,12 @@ from os import listdir
 from os.path import isfile, join
 path = '../data/custom'
 files = [f for f in listdir(path) if isfile(join(path, f))]
+n_right = 0
+n_tot = len(files)
 for file in files:
     test_img_value = filter(str.isdigit, file)
-    load_and_predict_custom_image(filename,file, int(test_img_value))
+    n_right += load_and_predict_custom_image(filename,file, int(test_img_value))
+print(str(n_tot - n_right)+ ' wrong predictions out of ' + str(n_tot) )
 
 
 # Test 3

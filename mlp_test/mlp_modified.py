@@ -47,7 +47,7 @@ logging.basicConfig(filename=logfilename,level=logging.INFO)
 
 activation_f=T.tanh
 n_epochs_g=500
-randomInit = True
+randomInit = False
 saveepochs = numpy.arange(0,n_epochs_g+1,10)
 
 # start-snippet-2
@@ -488,6 +488,7 @@ def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
     prediction = testfunc()[0]
     correct = (testImgvalue == prediction)
     print('The prediction ' + str(testfunc()[0]) + ' for ' + testImgFilename + '  is ' + str(correct) + '.')
+    return correct
 
 def predict_mlp(filename, i):
     """

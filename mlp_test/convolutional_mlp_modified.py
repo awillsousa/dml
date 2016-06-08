@@ -483,5 +483,6 @@ def predict_custom_image(params, testImgFilename='own_0.png', activation= activa
     prediction = testfunc()[0]
     correct = (int(test_img_value) == prediction)
     print('The prediction ' + str(testfunc()[0]) + ' for ' + testImgFilename + '  is ' + str(correct) + '.')
+    return correct
 
 

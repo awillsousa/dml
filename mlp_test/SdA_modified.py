@@ -519,6 +519,7 @@ def predict_custom_image_sda(params, testImgFilename='own_0.png', activation=act
     prediction = testfunc()[0]
     correct = (int(test_img_value) == prediction)
     print('The prediction ' + str(prediction[0]) + ' for ' + testImgFilename + ' is ' + str(correct[0]) + '.')
+    return correct[0]
 
 def predict_all_mnist_test_images_sda(paramsFilename, activation=activation_g):
 
