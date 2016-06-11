@@ -4,23 +4,22 @@ import unittest
 class DistanceTestCase(unittest.TestCase):
 
     def setUp(self):
-        thefiles = get_filenames("best_model_mlp")
-        self.zerofiles = load_models(thefiles[0])
-        self.randfiles = load_models(thefiles[1])
+        self.afiles = load_models(get_filenames("best_model_mlp", "zero_blur_a.pkl"))
+        self.bfiles = load_models(get_filenames("best_model_mlp", "rand.pkl"))
 
     def testDistanceBetweenZeroAndRandModels(self):
 
-        distances = calculate_distance_pairs(self.zerofiles, self.randfiles)
+        distances = calculate_distance_pairs(self.afiles, self.bfiles)
         plot_distance_pairs(distances)
 
     def testDistanceBetweenZeroModelsAndZeroTarget(self):
-        plot_distances_from_target(self.zerofiles[-1], self.zerofiles)
+        plot_distances_from_target(self.afiles[-1], self.afiles)
 
     def testDistanceBetweenRandModelsAndRandTarget(self):
-        plot_distances_from_target(self.randfiles[-1], self.randfiles)
+        plot_distances_from_target(self.bfiles[-1], self.bfiles)
 
     # def testDistanceBetweenRandModelsAndItself(self):
-    #     distances = calculate_distance_pairs(self.randfiles, self.randfiles)
+    #     distances = calculate_distance_pairs(self.bfiles, self.bfiles)
     #     plot_distance_pairs(distances)
 
 

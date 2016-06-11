@@ -31,7 +31,8 @@ __docformat__ = 'restructedtext en'
 import os
 import sys
 import timeit
-import logging
+
+import gzip
 
 import numpy
 
@@ -40,15 +41,22 @@ import fli
 import theano
 import theano.tensor as T
 import cPickle as pickle
-import gzip
 
-logfilename='../logs/mlp_modified.log'
-logging.basicConfig(filename=logfilename,level=logging.INFO)
+import logging
 
-activation_f=T.tanh
-n_epochs_g=500
+from data_utils import get_blurred_sets, shuffle_in_unison, save_model
+
+add_blurs = True
+testrun = False
+the_blur = 2
 randomInit = False
-saveepochs = numpy.arange(0,n_epochs_g+1,10)
+
+logfilename= '../logs/mlp_modified.log'
+
+activation_mlp=T.tanh
+n_epochs_mlp=10
+saveepochs_mlp = numpy.arange(0, n_epochs_mlp + 1, 10)
+
 
 # start-snippet-2
 class MLP(object):
@@ -94,7 +102,7 @@ class MLP(object):
             input=input,
             n_in=n_in,
             n_out=n_hidden,
-            activation=activation_f
+            activation=activation_mlp
         )
 
         # The logistic regression layer gets as input the hidden units
@@ -142,7 +150,7 @@ class MLP(object):
 # start-snippet-1
 class HiddenLayer(object):
     def __init__(self, rng, input, n_in, n_out, W=None, b=None,
-                 activation=activation_f):
+                 activation=activation_mlp):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
@@ -340,7 +348,7 @@ class LogisticRegression(object):
             raise NotImplementedError()
 
 
-def load_data(dataset):
+def load_data(dataset, add_the_blurs=add_blurs, blur_coeff = the_blur):
     ''' Loads the dataset
 
     :type dataset: string
@@ -380,6 +388,9 @@ def load_data(dataset):
             train_set, valid_set, test_set = pickle.load(f, encoding='latin1')
         except:
             train_set, valid_set, test_set = pickle.load(f)
+    if add_the_blurs:
+        blur_set = get_blurred_sets(train_set[0], train_set[1])
+        train_set = shuffle_in_unison(numpy.concatenate((train_set[0], blur_set[0])), numpy.concatenate((train_set[1], blur_set[1])))
     # train_set, valid_set, test_set format: tuple(input, target)
     # input is a numpy.ndarray of 2 dimensions (a matrix)
     # where each row corresponds to an example. target is a
@@ -449,8 +460,7 @@ def predict_mlp_all_fast(filename):
     test_set_x, test_set_y = datasets[2]
 
     index = T.lscalar()
-    x = T.matrix('x')
-    hidden_output = activation_f(T.dot(test_set_x[index], params[0]) + params[1])
+    hidden_output = activation_mlp(T.dot(test_set_x[index], params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
@@ -467,7 +477,7 @@ def predict_mlp_all_fast(filename):
 def testfunction(i, params, test_set_x, test_set_y):
     index = T.lscalar()
     x = T.matrix('x')
-    hidden_output = activation_f(T.dot(test_set_x[index], params[0]) + params[1])
+    hidden_output = activation_mlp(T.dot(test_set_x[index], params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
@@ -480,7 +490,7 @@ def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
     gg.close()
 
     test_img = fli.processImg('../data/custom/', testImgFilename)
-    hidden_output = activation_f(T.dot(test_img, params[0]) + params[1])
+    hidden_output = activation_mlp(T.dot(test_img, params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
@@ -508,8 +518,7 @@ def predict_mlp(filename, i):
     return testfunction(i, params, test_set_x, test_set_y)
 
 
-def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g,
-             dataset='mnist.pkl.gz', batch_size=20, n_hidden=500):
+def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_mlp, dataset='mnist.pkl.gz', batch_size=20, n_hidden=500, logfilename=logfilename):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer
     perceptron
@@ -640,12 +649,13 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
     print('... training')
 
     # early-stopping parameters
-    patience = 10000  # look as this many examples regardless
-    patience_increase = 2  # wait this much longer when a new best is
-                           # found
-    improvement_threshold = 0.995  # a relative improvement of this much is
+    # CCC Commenting out patience for simplicity and transparency's sake
+    # patience = 10000  # look as this many examples regardless
+    # patience_increase = 2  # wait this much longer when a new best is
+    #                        # found
+    # improvement_threshold = 0.995  # a relative improvement of this much is
                                    # considered significant
-    validation_frequency = min(n_train_batches, patience // 2)
+    validation_frequency = n_train_batches # CCCmin(n_train_batches, patience // 2)
                                   # go through this many
                                   # minibatche before checking the network
                                   # on the validation set; in this case we
@@ -687,11 +697,11 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
                     #improve patience if loss improvement is good enough
-                    if (
-                        this_validation_loss < best_validation_loss *
-                        improvement_threshold
-                    ):
-                        patience = max(patience, iter *patience_increase)
+                    # CCC if (
+                    #     this_validation_loss < best_validation_loss *
+                    #     improvement_threshold
+                    # ):
+                    #     patience = max(patience, iter *patience_increase)
 
                     best_validation_loss = this_validation_loss
                     best_iter = iter
@@ -706,40 +716,40 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_g
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
 
-            if patience <= iter:
-                done_looping = True
-                break
+            # CCC if patience <= iter:
+            #     done_looping = True
+            #     break
 
-        if epoch in saveepochs:
-            save_model(classifier.params, epoch, best_validation_loss, best_iter, test_score)
+        if epoch in saveepochs_mlp:
+            # test it on the test set
+            epoch_test_losses = [test_model(i) for i
+                                 in range(n_test_batches)]
+            epoch_test_score = numpy.mean(epoch_test_losses)
+            print(('epoch %i, test error of '
+                   'best model %f %%') %
+                  (epoch, epoch_test_score * 100.))
+            save_model(classifier.params, epoch, best_validation_loss, epoch_test_score,
+                       '../data/models/best_model_mlp_'
+                       , randomInit, add_blurs, testrun, logfilename, endrun = (n_epochs==epoch))
 
     end_time = timeit.default_timer()
     print(('Optimization complete. Best validation score of %f %% '
            'obtained at iteration %i, with test performance %f %%') %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
+    # test it on the test set
+    final_test_losses = [test_model(i) for i
+                   in range(n_test_batches)]
+    final_test_score = numpy.mean(final_test_losses)
+    print(('The final test score is %f %% ') %
+          (final_test_score * 100.))
+
     print(('The code for file ' +
            os.path.split(__file__)[1] +
            ' ran for %.2fm' % ((end_time - start_time) / 60.)), file=sys.stderr)
 
-def save_model(params, n_epochs, best_validation_loss, best_iter, test_score):
-    time = timeit.default_timer()
-    if not os.path.getsize(logfilename) > 0:
-        logging.info('end_time;n_epochs;randomInit;best_validation_score;iteration;test_score;activation')
-    logging.info(str(time) + ';' + str(n_epochs) + ';' + str(randomInit) +
-                 ';' + str(best_validation_loss * 100) +
-                 ';' + str(best_iter + 1) +
-                 ';' + str(test_score * 100.)+
-                 ';' + activation_f.name
-                 )
-    rand = ''
-    if randomInit:
-        rand = '_rand'
-    savedFileName = '../data/models/best_model_mlp_' + str(n_epochs) + rand + '.pkl'
-    gg = open(savedFileName, 'wb')
-    pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
-    gg.close()
-    print('Best model params saved as ' + savedFileName)
+
 
 if __name__ == '__main__':
+    logging.basicConfig(filename=logfilename, level=logging.INFO)
     test_mlp()
 

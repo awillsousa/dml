@@ -35,18 +35,25 @@ import numpy
 
 import cPickle as pickle
 
+from data_utils import save_model
+
 import theano
 import theano.tensor as T
+from theano import theano_logger
 from theano.tensor.signal import downsample
 from theano.tensor.nnet import conv2d
 
-from mlp_modified import HiddenLayer, LogisticRegression, load_data
+from mlp_modified import HiddenLayer, LogisticRegression, load_data, randomInit, add_blurs, testrun
 
 import fli
 
-activation_f=T.tanh
-n_epochs_g=250
-saveepochs = numpy.arange(0,n_epochs_g+1,5)
+import logging
+
+logfilename= '../logs/mlp_convolutional_modified.log'
+
+activation_convmlp=T.tanh
+n_epochs_convmlp=250
+saveepochs_convmlp = numpy.arange(0, n_epochs_convmlp + 1, 5)
 
 
 class LeNetConvPoolLayer(object):
@@ -118,7 +125,7 @@ class LeNetConvPoolLayer(object):
         # reshape it to a tensor of shape (1, n_filters, 1, 1). Each bias will
         # thus be broadcasted across mini-batches and feature map
         # width & height
-        self.output = activation_f(pooled_out + self.b.dimshuffle('x', 0, 'x', 'x'))
+        self.output = activation_convmlp(pooled_out + self.b.dimshuffle('x', 0, 'x', 'x'))
 
         # store parameters of this layer
         self.params = [self.W, self.b]
@@ -126,10 +133,7 @@ class LeNetConvPoolLayer(object):
         # keep track of model input
         self.input = input
 
-
-def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
-                    dataset='mnist.pkl.gz',
-                    nkerns=[20, 50], batch_size=500):
+def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist.pkl.gz', nkerns=[20, 50], batch_size=500, thislogfilename = logfilename):
     """ Demonstrates lenet on MNIST dataset
 
     :type learning_rate: float
@@ -145,7 +149,6 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
     :type nkerns: list of ints
     :param nkerns: number of kernels on each layer
     """
-
     rng = numpy.random.RandomState(23455)
 
     datasets = load_data(dataset)
@@ -216,7 +219,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
         input=layer2_input,
         n_in=nkerns[1] * 4 * 4,
         n_out=500,
-        activation=activation_f
+        activation=activation_convmlp
     )
 
     # classify the values of the fully-connected sigmoidal layer
@@ -276,12 +279,13 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
     ###############
     print('... training')
     # early-stopping parameters
-    patience = 10000  # look as this many examples regardless
-    patience_increase = 2  # wait this much longer when a new best is
-                           # found
-    improvement_threshold = 0.995  # a relative improvement of this much is
-                                   # considered significant
-    validation_frequency = min(n_train_batches, patience // 2)
+    # CCC Commenting out patience for simplicity and transparency's sake
+    # patience = 10000  # look as this many examples regardless
+    # patience_increase = 2  # wait this much longer when a new best is
+    #                        # found
+    # improvement_threshold = 0.995  # a relative improvement of this much is
+    #                                # considered significant
+    validation_frequency = n_train_batches #min(n_train_batches, patience // 2)
                                   # go through this many
                                   # minibatche before checking the network
                                   # on the validation set; in this case we
@@ -319,9 +323,9 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
                 if this_validation_loss < best_validation_loss:
 
                     #improve patience if loss improvement is good enough
-                    if this_validation_loss < best_validation_loss *  \
-                       improvement_threshold:
-                        patience = max(patience, iter * patience_increase)
+                    # CCC if this_validation_loss < best_validation_loss *  \
+                    #    improvement_threshold:
+                    #     patience = max(patience, iter * patience_increase)
 
                     # save best validation score and iteration number
                     best_validation_loss = this_validation_loss
@@ -338,16 +342,20 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
                           (epoch, minibatch_index + 1, n_train_batches,
                            test_score * 100.))
 
-            if patience <= iter:
-                done_looping = True
-                break
+            # CCC if patience <= iter:
+            #     done_looping = True
+            #     break
 
-        if epoch in saveepochs:
-            savedFileName = '../data/models/best_model_convolutional_mlp_' + str(epoch) + '.pkl'
-            gg = open(savedFileName, 'wb')
-            pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
-            gg.close()
-            print('Best model params saved as ' + savedFileName)
+        if epoch in saveepochs_convmlp:
+            # test it on the test set
+            epoch_test_losses = [test_model(i) for i
+                                 in range(n_test_batches)]
+            epoch_test_score = numpy.mean(epoch_test_losses)
+            print(('epoch %i, test error of '
+                   'best model %f %%') %
+                  (epoch, epoch_test_score * 100.))
+            save_model(params, epoch, best_validation_loss, epoch_test_score, '../data/models/best_model_convolutional_mlp_'
+                       , randomInit, add_blurs, testrun, thislogfilename, endrun = (n_epochs == epoch))
 
     end_time = timeit.default_timer()
 
@@ -359,14 +367,10 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_g,
            os.path.split(__file__)[1] +
            ' ran for %.2fm' % ((end_time - start_time) / 60.)), file=sys.stderr)
 
-if __name__ == '__main__':
-    evaluate_lenet5()
-
-
 def experiment(state, channel):
     evaluate_lenet5(state.learning_rate, dataset=state.dataset)
 
-def predict_all_mnist_test_images(modelfilename, activation=activation_f):
+def predict_all_mnist_test_images(modelfilename, activation=activation_convmlp):
 
     gg = open(modelfilename, 'rb')
     params = pickle.load(gg)
@@ -431,7 +435,7 @@ def predict_all_mnist_test_images(modelfilename, activation=activation_f):
                   + str(prediction[1]) + '.')
     print('There are ' + str(nerrors) + ' errors.')
 
-def predict_custom_image(params, testImgFilename='own_0.png', activation= activation_f):
+def predict_custom_image(params, testImgFilename='own_0.png', activation= activation_convmlp):
 
     test_img_value = filter(str.isdigit, testImgFilename)
 
@@ -484,5 +488,10 @@ def predict_custom_image(params, testImgFilename='own_0.png', activation= activa
     correct = (int(test_img_value) == prediction)
     print('The prediction ' + str(testfunc()[0]) + ' for ' + testImgFilename + '  is ' + str(correct) + '.')
     return correct
+
+
+if __name__ == '__main__':
+    logging.basicConfig(filename=logfilename, level=logging.INFO)
+    evaluate_lenet5()
 
 

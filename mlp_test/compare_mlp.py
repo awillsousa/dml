@@ -6,14 +6,12 @@ import matplotlib.pyplot as plt
 
 path = '../data/models/'
 
-def get_filenames(astring, path = '../data/models' ):
-    files = [f for f in listdir(path) if isfile(join(path, f)) and astring in f]
+def get_filenames(startString, endString,  path = '../data/models' ):
+    files = [f for f in listdir(path) if isfile(join(path, f)) and startString in f and f.endswith(endString)]
     theKey = lambda f: int(filter(str.isdigit, f))
-    zerofiles = sorted([f for f in files if "rand" not in f], key=theKey)
-    randfiles = sorted([f for f in files if "rand" in f], key=theKey)
-    return [zerofiles, randfiles]
+    thefiles = sorted([f for f in files], key=theKey)
+    return thefiles
 
-get_filenames("best_model_mlp")
 
 #model_and_filename resp. models_and_filenames have the structure [[W,b,W,b], filename]
 def calculate_distances_from_model(model_and_filename, models_and_filenames):
@@ -33,8 +31,12 @@ def calculate_distances_from_model(model_and_filename, models_and_filenames):
 
 def calculate_distance_pairs(models_and_filenames_1, models_and_filenames_2):
     results = []
-    n_models = len(models_and_filenames_1);
-    assert (n_models == len(models_and_filenames_2))
+    n_models_1 = len(models_and_filenames_1)
+    n_models_2 = len(models_and_filenames_2)
+    if n_models_1 >= n_models_2:
+        n_models = n_models_2
+    else:
+        n_models = n_models_1
     print ('Processing ' + str(n_models) + ' models.')
     for p in range(n_models):
         print(str(p) +' - ' + models_and_filenames_1[p][1])
@@ -149,6 +151,17 @@ def test_descending_distances(results):
                 if not exp: raise AssertionError(' p1 = ' + str(results[p1]) + ' p1 = ' + str(results[p2]))
                 print(str(p1) + ':' + str(p2) + ' - OK')
 
-# test_descending_distances(calculate_distance(filenames0));
 
-# print(str(calculate_distance(models0, filenames0)))
+import os
+files = [f for f in listdir('.') if isfile(join('.', f)) and 'best_model_convolutional_mlp' in f and not '_test' in f]
+for file in files:
+    print('a - ' + file)
+    file_n = filter(str.isdigit, file)
+    print('b - ' +str(file_n))
+    index = file.find(file_n)
+    print('c - ' +file[:index])
+    print('d - ' + file[index + len(file_n):])
+    print('e - '+ file[:index]+ file_n +'_zero'+ file[index + len(file_n):])
+    newname = file[:index]+ file_n +'_zero'+ file[index + len(file_n):]
+    os.rename(file, newname)
+
