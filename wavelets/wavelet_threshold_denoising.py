@@ -1,3 +1,4 @@
+#inspired by https://blancosilva.wordpress.com/teaching/mathematical-imaging/denoising-wavelet-thresholding/
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import pywt
