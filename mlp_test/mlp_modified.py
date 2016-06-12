@@ -44,18 +44,22 @@ import cPickle as pickle
 
 import logging
 
-from data_utils import get_blurred_sets, shuffle_in_unison, save_model
+from data_utils import get_blurred_sets, shuffle_in_unison, save_model, load_params
 
-add_blurs = True
+add_blurs = False
 testrun = False
-the_blur = 2
-randomInit = False
+randomInit = True
 
 logfilename= '../logs/mlp_modified.log'
 
 activation_mlp=T.tanh
-n_epochs_mlp=10
+n_epochs_mlp=1000
 saveepochs_mlp = numpy.arange(0, n_epochs_mlp + 1, 10)
+loadparams = False
+#If loadparams is True, then the parameters are loaded from this file,
+# n_epochs_mlp must be greater than the starting epoch number,
+# which is extracted from the paramsfilename.
+paramsfilename = '../data/models/best_model_mlp_500_zero.pkl'
 
 
 # start-snippet-2
@@ -70,7 +74,7 @@ class MLP(object):
     class).
     """
 
-    def __init__(self, rng, input, n_in, n_hidden, n_out):
+    def __init__(self, rng, input, n_in, n_hidden, n_out, randomInit=False, loadparams=False, paramsfilename = paramsfilename ):
         """Initialize the parameters for the multilayer perceptron
 
         :type rng: numpy.random.RandomState
@@ -92,6 +96,10 @@ class MLP(object):
         which the labels lie
 
         """
+        loadedparams =[None]*4
+        if loadparams:
+            print("Loading params from "  + paramsfilename + "..." )
+            loadedparams = load_params(paramsfilename)
 
         # Since we are dealing with a one hidden layer MLP, this will translate
         # into a HiddenLayer with a tanh activation function connected to the
@@ -102,6 +110,8 @@ class MLP(object):
             input=input,
             n_in=n_in,
             n_out=n_hidden,
+            W=loadedparams[0],
+            b= loadedparams[1],
             activation=activation_mlp
         )
 
@@ -110,7 +120,10 @@ class MLP(object):
         self.logRegressionLayer = LogisticRegression(
             input=self.hiddenLayer.output,
             n_in=n_hidden,
-            n_out=n_out
+            n_out=n_out,
+            randomInit=randomInit,
+            W=loadedparams[2],
+            b=loadedparams[3],
         )
         # end-snippet-2 start-snippet-3
         # L1 norm ; one regularization option is to enforce L1 norm to
@@ -229,7 +242,7 @@ class LogisticRegression(object):
     determine a class membership probability.
     """
 
-    def __init__(self, input, n_in, n_out):
+    def __init__(self, input, n_in, n_out, randomInit=False, W=None, b=None):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -247,28 +260,32 @@ class LogisticRegression(object):
         """
         # start-snippet-1
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
-        initW = numpy.zeros(
-                    (n_in, n_out),
+        if W is None:
+            initW = numpy.zeros(
+                        (n_in, n_out),
+                        dtype=theano.config.floatX
+                    )
+            initB = numpy.zeros(
+                    (n_out,),
                     dtype=theano.config.floatX
                 )
-        initB = numpy.zeros(
-                (n_out,),
-                dtype=theano.config.floatX
+            if randomInit:
+                initW[:] = numpy.random.randn(*initW.shape)
+                initB[:] = numpy.random.randn(*initB.shape)
+            self.W = theano.shared(
+                value= initW,
+                name='W',
+                borrow=True
             )
-        if randomInit:
-            initW[:] = numpy.random.randn(*initW.shape)
-            initB[:] = numpy.random.randn(*initB.shape)
-        self.W = theano.shared(
-            value= initW,
-            name='W',
-            borrow=True
-        )
-        # initialize the biases b as a vector of n_out 0s
-        self.b = theano.shared(
-            value=initB,
-            name='b',
-            borrow=True
-        )
+            # initialize the biases b as a vector of n_out 0s
+            self.b = theano.shared(
+                value=initB,
+                name='b',
+                borrow=True
+            )
+        else:
+            self.W = W
+            self.b = b
 
         # symbolic expression for computing the matrix of class-membership
         # probabilities
@@ -348,7 +365,7 @@ class LogisticRegression(object):
             raise NotImplementedError()
 
 
-def load_data(dataset, add_the_blurs=add_blurs, blur_coeff = the_blur):
+def load_data(dataset, add_the_blurs=False):
     ''' Loads the dataset
 
     :type dataset: string
@@ -437,7 +454,7 @@ def predict_mlp_all(filename):
     gg.close()
 
     dataset = 'mnist.pkl.gz'
-    datasets = load_data(dataset)
+    datasets = load_data(dataset, add_the_blurs = add_blurs )
     test_set_x, test_set_y = datasets[2]
 
 
@@ -518,7 +535,10 @@ def predict_mlp(filename, i):
     return testfunction(i, params, test_set_x, test_set_y)
 
 
-def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_mlp, dataset='mnist.pkl.gz', batch_size=20, n_hidden=500, logfilename=logfilename):
+def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_mlp,
+             dataset='mnist.pkl.gz', batch_size=20, n_hidden=500, randomInit=randomInit,
+             logfilename=logfilename, loadparams = loadparams, paramsfilename=paramsfilename,
+             testrun = testrun, add_blurs = add_blurs):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer
     perceptron
@@ -546,6 +566,8 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_m
 
 
    """
+
+    print ('loadparams is ' + str(loadparams))
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
@@ -578,7 +600,10 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_m
         input=x,
         n_in=28 * 28,
         n_hidden=n_hidden,
-        n_out=10
+        n_out=10,
+        randomInit=randomInit,
+        loadparams = loadparams,
+        paramsfilename = paramsfilename
     )
 
     # start-snippet-4
@@ -667,6 +692,8 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_m
     start_time = timeit.default_timer()
 
     epoch = 0
+    if loadparams:
+        epoch = int(filter(str.isdigit, paramsfilename))
     done_looping = False
 
     while (epoch < n_epochs) and (not done_looping):

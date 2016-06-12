@@ -35,15 +35,14 @@ import numpy
 
 import cPickle as pickle
 
-from data_utils import save_model
+from data_utils import save_model, load_params
 
 import theano
 import theano.tensor as T
-from theano import theano_logger
 from theano.tensor.signal import downsample
 from theano.tensor.nnet import conv2d
 
-from mlp_modified import HiddenLayer, LogisticRegression, load_data, randomInit, add_blurs, testrun
+from mlp_modified import HiddenLayer, LogisticRegression, load_data
 
 import fli
 
@@ -52,14 +51,22 @@ import logging
 logfilename= '../logs/mlp_convolutional_modified.log'
 
 activation_convmlp=T.tanh
-n_epochs_convmlp=250
+n_epochs_convmlp=1000
 saveepochs_convmlp = numpy.arange(0, n_epochs_convmlp + 1, 5)
+
+add_blurs = False
+testrun= False
+loadparams = False
+#If loadparams is True, then the parameters are loaded from this file,
+# n_epochs_mlp must be greater than the starting epoch number,
+# which is extracted from the paramsfilename.
+paramsfilename = '../data/models/best_model_convolutional_mlp_250_zero_blur.pkl'
 
 
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2)):
+    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2), W=None, b=None):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -83,28 +90,31 @@ class LeNetConvPoolLayer(object):
 
         assert image_shape[1] == filter_shape[1]
         self.input = input
+        if W is None:
+            # there are "num input feature maps * filter height * filter width"
+            # inputs to each hidden unit
+            fan_in = numpy.prod(filter_shape[1:])
+            # each unit in the lower layer receives a gradient from:
+            # "num output feature maps * filter height * filter width" /
+            #   pooling size
+            fan_out = (filter_shape[0] * numpy.prod(filter_shape[2:]) //
+                       numpy.prod(poolsize))
+            # initialize weights with random weights
+            W_bound = numpy.sqrt(6. / (fan_in + fan_out))
+            self.W = theano.shared(
+                numpy.asarray(
+                    rng.uniform(low=-W_bound, high=W_bound, size=filter_shape),
+                    dtype=theano.config.floatX
+                ),
+                borrow=True
+            )
 
-        # there are "num input feature maps * filter height * filter width"
-        # inputs to each hidden unit
-        fan_in = numpy.prod(filter_shape[1:])
-        # each unit in the lower layer receives a gradient from:
-        # "num output feature maps * filter height * filter width" /
-        #   pooling size
-        fan_out = (filter_shape[0] * numpy.prod(filter_shape[2:]) //
-                   numpy.prod(poolsize))
-        # initialize weights with random weights
-        W_bound = numpy.sqrt(6. / (fan_in + fan_out))
-        self.W = theano.shared(
-            numpy.asarray(
-                rng.uniform(low=-W_bound, high=W_bound, size=filter_shape),
-                dtype=theano.config.floatX
-            ),
-            borrow=True
-        )
-
-        # the bias is a 1D tensor -- one bias per output feature map
-        b_values = numpy.zeros((filter_shape[0],), dtype=theano.config.floatX)
-        self.b = theano.shared(value=b_values, borrow=True)
+            # the bias is a 1D tensor -- one bias per output feature map
+            b_values = numpy.zeros((filter_shape[0],), dtype=theano.config.floatX)
+            self.b = theano.shared(value=b_values, borrow=True)
+        else:
+            self.W=W
+            self.b=b
 
         # convolve input feature maps with filters
         conv_out = conv2d(
@@ -133,7 +143,10 @@ class LeNetConvPoolLayer(object):
         # keep track of model input
         self.input = input
 
-def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist.pkl.gz', nkerns=[20, 50], batch_size=500, thislogfilename = logfilename):
+def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist.pkl.gz', nkerns=[20, 50],
+            batch_size=500, thislogfilename = logfilename,
+            loadparams=loadparams, paramsfilename=paramsfilename,
+            randomInit=False, testrun=testrun, add_blurs=add_blurs):
     """ Demonstrates lenet on MNIST dataset
 
     :type learning_rate: float
@@ -149,9 +162,15 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
     :type nkerns: list of ints
     :param nkerns: number of kernels on each layer
     """
+
+    loadedparams = [None] * 8
+    if loadparams:
+        print("Loading params from " + paramsfilename + "...")
+        loadedparams = load_params(paramsfilename)
+
     rng = numpy.random.RandomState(23455)
 
-    datasets = load_data(dataset)
+    datasets = load_data(dataset, add_the_blurs=add_blurs)
 
     train_set_x, train_set_y = datasets[0]
     valid_set_x, valid_set_y = datasets[1]
@@ -192,7 +211,9 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
         input=layer0_input,
         image_shape=(batch_size, 1, 28, 28),
         filter_shape=(nkerns[0], 1, 5, 5),
-        poolsize=(2, 2)
+        poolsize=(2, 2),
+        W = loadedparams[6],
+        b=loadedparams[7]
     )
 
     # Construct the second convolutional pooling layer
@@ -204,7 +225,9 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
         input=layer0.output,
         image_shape=(batch_size, nkerns[0], 12, 12),
         filter_shape=(nkerns[1], nkerns[0], 5, 5),
-        poolsize=(2, 2)
+        poolsize=(2, 2),
+        W = loadedparams[4],
+        b = loadedparams[5]
     )
 
     # the HiddenLayer being fully-connected, it operates on 2D matrices of
@@ -219,11 +242,16 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
         input=layer2_input,
         n_in=nkerns[1] * 4 * 4,
         n_out=500,
-        activation=activation_convmlp
+        activation=activation_convmlp,
+        W=loadedparams[2],
+        b=loadedparams[3]
     )
 
     # classify the values of the fully-connected sigmoidal layer
-    layer3 = LogisticRegression(input=layer2.output, n_in=500, n_out=10)
+    layer3 = LogisticRegression(input=layer2.output,
+                                n_in=500, n_out=10,
+                                W=loadedparams[0],
+                                b=loadedparams[1])
 
     # the cost we minimize during training is the NLL of the model
     cost = layer3.negative_log_likelihood(y)
@@ -297,6 +325,8 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
     start_time = timeit.default_timer()
 
     epoch = 0
+    if loadparams:
+        epoch = int(filter(str.isdigit, paramsfilename))
     done_looping = False
 
     while (epoch < n_epochs) and (not done_looping):

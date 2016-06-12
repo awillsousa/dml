@@ -74,3 +74,12 @@ def save_model(params, epoch=-1 , best_validation_loss=-1, test_score=-1, namest
                  ';' + str(test_score * 100.))
     if endrun:
         logging.info('-----------------------------------------')
+
+def load_params(filename):
+    gg = open(filename, 'rb')
+    params = pickle.load(gg)
+    gg.close()
+    return params
+
+def epoch_from_filename(filename):
+    return filter(str.isdigit, filename)
