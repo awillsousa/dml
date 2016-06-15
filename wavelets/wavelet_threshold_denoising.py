@@ -52,6 +52,7 @@ def w2dReg(img, mode=mode, level=level, noiseSigma = noiseSigma):
 
 def denoise(noisy_img, mode, level, noiseSigma):
     coeffs = pywt.wavedec2(noisy_img, mode, level=level)
+    # Thresholding the detail (i.e. high frequency) coefficiens
     threshold = noiseSigma * np.sqrt(2 * np.log2(noisy_img.size))
     rec_coeffs = coeffs
     rec_coeffs[1:] = (pywt.threshold(i, value=threshold, mode="soft") for i in rec_coeffs[1:])
