@@ -1,7 +1,7 @@
 import cPickle as pickle
-from convolutional_mlp_modified import predict_all_mnist_test_images, predict_custom_image
+from convolutional_mlp_modified import predict_on_mnist, predict_custom_image
 
-paramsFilename = '../data/models/best_model_convolutional_mlp_250.pkl'
+paramsFilename = '../data/models/best_model_convolutional_mlp_300_zero_blur_test.pkl'
 
 # Test 1
 from os import listdir
@@ -20,4 +20,5 @@ for file in files:
 print(str(n_tot - n_right) + ' wrong predictions out of ' + str(n_tot))
 
 # Test 2
-predict_all_mnist_test_images(paramsFilename)
+predict_on_mnist(paramsFilename , test_train_data=False, saveToFile=False)
+

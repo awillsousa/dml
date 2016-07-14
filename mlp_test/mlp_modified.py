@@ -365,7 +365,7 @@ class LogisticRegression(object):
             raise NotImplementedError()
 
 
-def load_data(dataset, add_the_blurs=False):
+def load_data(dataset, add_the_blurs=False, blur=1):
     ''' Loads the dataset
 
     :type dataset: string
@@ -406,7 +406,7 @@ def load_data(dataset, add_the_blurs=False):
         except:
             train_set, valid_set, test_set = pickle.load(f)
     if add_the_blurs:
-        blur_set = get_blurred_sets(train_set[0], train_set[1])
+        blur_set = get_blurred_sets(train_set[0], train_set[1], blur)
         train_set = shuffle_in_unison(numpy.concatenate((train_set[0], blur_set[0])), numpy.concatenate((train_set[1], blur_set[1])))
     # train_set, valid_set, test_set format: tuple(input, target)
     # input is a numpy.ndarray of 2 dimensions (a matrix)
@@ -467,14 +467,19 @@ def predict_mlp_all(filename):
 
     print ('There are' + str(nerrors) + ' errors.')
 
-def predict_mlp_all_fast(filename):
+def predict_mlp_all_fast(filename, test_train_data=False, saveToFile=False, showImages = False):
     gg = open(filename, 'rb')
     params = pickle.load(gg)
     gg.close()
 
     dataset = 'mnist.pkl.gz'
     datasets = load_data(dataset)
-    test_set_x, test_set_y = datasets[2]
+    if(test_train_data):
+        test_set_x, test_set_y = datasets[0]
+        test_or_train = '_train'
+    else:
+        test_set_x, test_set_y = datasets[2]
+        test_or_train = '_test'
 
     index = T.lscalar()
     hidden_output = activation_mlp(T.dot(test_set_x[index], params[0]) + params[1])
@@ -482,14 +487,22 @@ def predict_mlp_all_fast(filename):
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
-    nerrors = 0
-    for j in xrange (10000):
+    range= test_set_x.shape[0].eval()
+    wrongpredictions = []
+    for j in xrange (range):
         pred = testfunc(j)
         if not(pred[0] == pred[1]):
             print ("The predicted value " + str(pred[0]) + " at index " + str(j) + " is wrong. The correct value is " + str(pred[1]) +".")
-            nerrors += 1
+            if showImages:
+                wrongpredictions.append([j,int(pred[0]),int(pred[1]), test_set_x[j]])
+    print ('There are ' + str(len(wrongpredictions)) + ' errors.')
+    if saveToFile:
+        gg = open('../data/mlp_test_errors'+test_or_train+'.pkl', 'wb')
+        pickle.dump(wrongpredictions, gg, protocol=pickle.HIGHEST_PROTOCOL)
+        gg.close()
+    return wrongpredictions
 
-    print ('There are ' + str(nerrors) + ' errors.')
+
 
 def testfunction(i, params, test_set_x, test_set_y):
     index = T.lscalar()
@@ -517,7 +530,7 @@ def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
     print('The prediction ' + str(testfunc()[0]) + ' for ' + testImgFilename + '  is ' + str(correct) + '.')
     return correct
 
-def predict_mlp(filename, i):
+def predict_mlp(filename, i, test_train_data = False):
     """
     An example of how to load a trained model and use it
     to predict labels.
@@ -530,9 +543,12 @@ def predict_mlp(filename, i):
     # We can test it on some examples from test test
     dataset='mnist.pkl.gz'
     datasets = load_data(dataset)
-    test_set_x, test_set_y = datasets[2]
+    if (test_train_data):
+        test_set_x, test_set_y = datasets[0]
+    else:
+        test_set_x, test_set_y = datasets[2]
 
-    return testfunction(i, params, test_set_x, test_set_y)
+    return testfunction(i, params, test_set_x, test_set_y), test_set_x[i], test_set_y[i]
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_mlp,

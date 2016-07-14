@@ -62,7 +62,7 @@ def save_model(params, epoch=-1 , best_validation_loss=-1, test_score=-1, namest
     pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
     gg.close()
     print(('Best model params saved as ' + savedFileName
-           + ' with test score  best model %f %%') % (test_score * 100.))
+           + ' with test score %f %%') % (test_score * 100.))
 
     time = timeit.default_timer()
     if not os.path.isfile(logfilename):

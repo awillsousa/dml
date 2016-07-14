@@ -50,17 +50,18 @@ import logging
 
 logfilename= '../logs/mlp_convolutional_modified.log'
 
-activation_convmlp=T.tanh
+activation_convmlp= T.nnet.relu #T.tanh
 n_epochs_convmlp=1000
 saveepochs_convmlp = numpy.arange(0, n_epochs_convmlp + 1, 5)
 
 add_blurs = False
+blur = 2
 testrun= False
 loadparams = False
 #If loadparams is True, then the parameters are loaded from this file,
 # n_epochs_mlp must be greater than the starting epoch number,
 # which is extracted from the paramsfilename.
-paramsfilename = '../data/models/best_model_convolutional_mlp_250_zero_blur.pkl'
+paramsfilename = '../data/models/best_model_convolutional_mlp_250_zero.pkl'
 
 
 class LeNetConvPoolLayer(object):
@@ -146,7 +147,7 @@ class LeNetConvPoolLayer(object):
 def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist.pkl.gz', nkerns=[20, 50],
             batch_size=500, thislogfilename = logfilename,
             loadparams=loadparams, paramsfilename=paramsfilename,
-            randomInit=False, testrun=testrun, add_blurs=add_blurs):
+            randomInit=False, testrun=testrun, add_blurs=add_blurs, blur=blur):
     """ Demonstrates lenet on MNIST dataset
 
     :type learning_rate: float
@@ -170,7 +171,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
 
     rng = numpy.random.RandomState(23455)
 
-    datasets = load_data(dataset, add_the_blurs=add_blurs)
+    datasets = load_data(dataset, add_the_blurs=add_blurs, blur = blur)
 
     train_set_x, train_set_y = datasets[0]
     valid_set_x, valid_set_y = datasets[1]
@@ -400,7 +401,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
 def experiment(state, channel):
     evaluate_lenet5(state.learning_rate, dataset=state.dataset)
 
-def predict_all_mnist_test_images(modelfilename, activation=activation_convmlp):
+def predict_on_mnist(modelfilename, activation=activation_convmlp, test_train_data=False, saveToFile=False):
 
     gg = open(modelfilename, 'rb')
     params = pickle.load(gg)
@@ -413,7 +414,12 @@ def predict_all_mnist_test_images(modelfilename, activation=activation_convmlp):
 
     dataset = 'mnist.pkl.gz'
     datasets = load_data(dataset)
-    test_set_x, test_set_y = datasets[2]
+    if (test_train_data):
+        test_set_x, test_set_y = datasets[0]
+        test_or_train = '_train'
+    else:
+        test_set_x, test_set_y = datasets[2]
+        test_or_train = '_test'
 
     index = T.lscalar()
     layer0_input = test_set_x[index].reshape((batch_size, 1, 28, 28))
@@ -455,15 +461,20 @@ def predict_all_mnist_test_images(modelfilename, activation=activation_convmlp):
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
-    nerrors = 0
-    for j in xrange(10000):
+    range = test_set_x.shape[0].eval()
+    wrongpredictions = []
+    for j in xrange(range):
         prediction = testfunc(j)
         correct = (prediction[0] == prediction[1])
         if correct == False:
-            nerrors += 1
             print('The prediction ' + str(prediction[0]) + ' for index ' + str(j) + '  is wrong . The correct value is '
                   + str(prediction[1]) + '.')
-    print('There are ' + str(nerrors) + ' errors.')
+            wrongpredictions.append([j, prediction[0], prediction[1]])
+    print('There are ' + str(len(wrongpredictions)) + ' errors.')
+    if saveToFile:
+        gg = open('../data/lenet_test_errors' + test_or_train + '.pkl', 'wb')
+        pickle.dump(wrongpredictions, gg, protocol=pickle.HIGHEST_PROTOCOL)
+        gg.close()
 
 def predict_custom_image(params, testImgFilename='own_0.png', activation= activation_convmlp):
 
