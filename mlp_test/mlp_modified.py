@@ -48,7 +48,7 @@ from data_utils import get_blurred_sets, shuffle_in_unison, save_model, load_par
 
 add_blurs = False
 testrun = False
-randomInit = True
+randomInit = False
 
 logfilename= '../logs/mlp_modified.log'
 
@@ -365,7 +365,7 @@ class LogisticRegression(object):
             raise NotImplementedError()
 
 
-def load_data(dataset, add_the_blurs=False, blur=1):
+def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False):
     ''' Loads the dataset
 
     :type dataset: string
@@ -375,6 +375,11 @@ def load_data(dataset, add_the_blurs=False, blur=1):
     #############
     # LOAD DATA #
     #############
+
+    naughty_images = [132, 494, 902, 2720, 4476, 6885, 10994, 11949, 19360, 21601, 25159,
+                      25562, 25678, 26504, 26560, 31596, 34404, 35234, 35480, 35616,
+                      36104, 37038, 37816, 37834, 38526, 38700, 42566, 43109, 43454,
+                      45143, 46078, 47034, 47600]
 
     # Download the MNIST dataset if it is not present
     data_dir, data_file = os.path.split(dataset)
@@ -408,6 +413,13 @@ def load_data(dataset, add_the_blurs=False, blur=1):
     if add_the_blurs:
         blur_set = get_blurred_sets(train_set[0], train_set[1], blur)
         train_set = shuffle_in_unison(numpy.concatenate((train_set[0], blur_set[0])), numpy.concatenate((train_set[1], blur_set[1])))
+    if replace_images:
+        test_set_x, test_set_y = train_set
+        j = 0
+        for i in naughty_images:
+            test_set_x[i] = test_set_x[j]
+            test_set_y[i] = test_set_y[j]
+            j += 1
     # train_set, valid_set, test_set format: tuple(input, target)
     # input is a numpy.ndarray of 2 dimensions (a matrix)
     # where each row corresponds to an example. target is a
@@ -772,7 +784,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_m
                    'best model %f %%') %
                   (epoch, epoch_test_score * 100.))
             save_model(classifier.params, epoch, best_validation_loss, epoch_test_score,
-                       '../data/models/best_model_mlp_'
+                       '../data/models/best_model_mlp_cleandata'
                        , randomInit, add_blurs, testrun, logfilename, endrun = (n_epochs==epoch))
 
     end_time = timeit.default_timer()

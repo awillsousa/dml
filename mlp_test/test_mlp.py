@@ -1,6 +1,6 @@
 from  mlp_modified import predict_mlp,  predict_mlp_all_fast, load_and_predict_custom_image
+from utils import isqrt
 
-#Uncomment to test
 
 filename = '../data/models/best_model_mlp_500_zero.pkl'
 
@@ -32,10 +32,9 @@ import matplotlib.cm as cm
 def test_3():
     wrongpredictions = predict_mlp_all_fast(filename, test_train_data=True, saveToFile=False, showImages=True)
     i = 1
-    a = 6
-    b = 6
+    a = isqrt(len(wrongpredictions)) + 1
     for wimg in wrongpredictions:
-        plt.subplot(a, b, i)
+        plt.subplot(a, a, i)
         plt.title(str(wimg[1])+'!='+ str(wimg[2]))
         fig = plt.imshow(wimg[3].reshape((28, 28)).eval(), cmap=cm.Greys_r)
         plt.ylabel(str(wimg[0]))
@@ -45,6 +44,8 @@ def test_3():
     plt.tight_layout()
     plt.show()
 
+test_3()
+
 def test_4(example_index):
     b = predict_mlp(filename, example_index, test_train_data = True)
     plt.title(str(example_index) + ' -> prediction = ' +str(b[0][0])+' , should be = '+str(b[0][1]),  fontsize=24)
@@ -52,6 +53,10 @@ def test_4(example_index):
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
     plt.show()
+
+
+
+
 
 
 
