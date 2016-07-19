@@ -784,7 +784,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_m
                    'best model %f %%') %
                   (epoch, epoch_test_score * 100.))
             save_model(classifier.params, epoch, best_validation_loss, epoch_test_score,
-                       '../data/models/best_model_mlp_cleandata'
+                       '../data/models/best_model_mlp_'
                        , randomInit, add_blurs, testrun, logfilename, endrun = (n_epochs==epoch))
 
     end_time = timeit.default_timer()
