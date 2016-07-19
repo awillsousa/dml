@@ -29,7 +29,7 @@ def test_2():
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 # Test 3
-def test_3():
+def test_hu():
     wrongpredictions = predict_mlp_all_fast(filename, test_train_data=True, saveToFile=False, showImages=True)
     i = 1
     a = isqrt(len(wrongpredictions)) + 1
@@ -44,7 +44,7 @@ def test_3():
     plt.tight_layout()
     plt.show()
 
-test_3()
+test_hu()
 
 def test_4(example_index):
     b = predict_mlp(filename, example_index, test_train_data = True)

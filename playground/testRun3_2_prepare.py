@@ -1,6 +1,6 @@
 import network3_2
 from network3_2 import Network
-from network3_2 import ConvPoolLayer, FullyConnectedLayer, SoftmaxLayer
+from network3_2 import FullyConnectedLayer, SoftmaxLayer
 training_data, validation_data, test_data = network3_2.load_data_shared()
 mini_batch_size = 10
 net = Network([
