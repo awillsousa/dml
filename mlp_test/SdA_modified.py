@@ -49,9 +49,10 @@ from theano.tensor.shared_randomstreams import RandomStreams
 from mlp_modified import LogisticRegression,HiddenLayer,load_data
 from dA import dA
 
-pretraining_epochs_g = 3
-training_epochs_g = 50
+pretraining_epochs_g = 15
+training_epochs_g = 1000
 activation_g=T.nnet.sigmoid
+saveepochs_sda = numpy.append([1], numpy.arange(0, training_epochs_g + 1, 10))
 
 # start-snippet-1
 class SdA(object):
@@ -443,7 +444,7 @@ def test_SdA(finetune_lr=0.1, pretraining_epochs=pretraining_epochs_g,
     while (epoch < training_epochs) and (not done_looping):
         epoch = epoch + 1
         for minibatch_index in range(n_train_batches):
-            minibatch_avg_cost = train_fn(minibatch_index)
+            train_fn(minibatch_index)
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
             if (iter + 1) % validation_frequency == 0:
@@ -479,13 +480,13 @@ def test_SdA(finetune_lr=0.1, pretraining_epochs=pretraining_epochs_g,
             if patience <= iter:
                 done_looping = True
                 break
-
-        epochs_str = str(pretraining_epochs) + '_' + str(epoch)
-        savedFileName = '../data/models/best_model_sda_' + epochs_str + '.pkl'
-        gg = open(savedFileName, 'wb')
-        pickle.dump(sda.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
-        gg.close()
-        print('Best model params saved as ' + savedFileName)
+        if epoch in saveepochs_sda:
+            epochs_str = str(pretraining_epochs) + '_' + str(epoch)
+            savedFileName = '../data/models/best_model_sda_' + epochs_str + '.pkl'
+            gg = open(savedFileName, 'wb')
+            pickle.dump(sda.params, gg, protocol=pickle.HIGHEST_PROTOCOL)
+            gg.close()
+            print('Best model params saved as ' + savedFileName)
 
     end_time = timeit.default_timer()
 
@@ -521,7 +522,7 @@ def predict_custom_image_sda(params, testImgFilename='own_0.png', activation=act
     print('The prediction ' + str(prediction[0]) + ' for ' + testImgFilename + ' is ' + str(correct[0]) + '.')
     return correct[0]
 
-def predict_all_mnist_test_images_sda(paramsFilename, activation=activation_g):
+def predict_mnist_sda(paramsFilename, activation=activation_g, test_data='test', saveToFile=False):
 
     gg = open(paramsFilename, 'rb')
     params = pickle.load(gg)
@@ -529,7 +530,17 @@ def predict_all_mnist_test_images_sda(paramsFilename, activation=activation_g):
 
     dataset = 'mnist.pkl.gz'
     datasets = load_data(dataset)
-    test_set_x, test_set_y = datasets[2]
+    if (test_data == 'test'):
+        test_set_x, test_set_y = datasets[2]
+        test_data_str = '_test'
+    elif (test_data == 'validation'):
+        test_set_x, test_set_y = datasets[1]
+        test_data_str = '_validation'
+    elif (test_data == 'train'):
+        test_set_x, test_set_y = datasets[0]
+        test_data_str = '_train'
+
+    range = test_set_x.shape[0].eval()
 
     index = T.lscalar()
     hidden_input = test_set_x[index]
@@ -544,7 +555,7 @@ def predict_all_mnist_test_images_sda(paramsFilename, activation=activation_g):
 
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
     nerrors = 0
-    for j in xrange(10000):
+    for j in xrange(range):
         prediction = testfunc(j)
         correct = (prediction[0] == prediction[1])
         if correct == False:

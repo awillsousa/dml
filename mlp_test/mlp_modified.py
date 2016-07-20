@@ -460,44 +460,30 @@ def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False):
             (test_set_x, test_set_y)]
     return rval
 
-def predict_mlp_all(filename):
-    gg = open(filename, 'rb')
-    params = pickle.load(gg)
-    gg.close()
 
-    dataset = 'mnist.pkl.gz'
-    datasets = load_data(dataset, add_the_blurs = add_blurs )
-    test_set_x, test_set_y = datasets[2]
-
-
-    nerrors = 0
-    for j in xrange (10000):
-        pred = testfunction(j, params, test_set_x, test_set_y)
-        if not(pred[0] == pred[1]):
-            print ("The prediction for " + str(pred[0]) + " is false")
-            nerrors += 1
-
-    print ('There are' + str(nerrors) + ' errors.')
-
-def predict_mlp_all_fast(filename, test_train_data=False, saveToFile=False, showImages = False):
+def predict_mlp_all_fast(filename, test_data='test', saveToFile=False, diagnose=False):
     gg = open(filename, 'rb')
     params = pickle.load(gg)
     gg.close()
 
     dataset = 'mnist.pkl.gz'
     datasets = load_data(dataset)
-    if(test_train_data):
-        test_set_x, test_set_y = datasets[0]
-        test_or_train = '_train'
-    else:
+    if(test_data=='test'):
         test_set_x, test_set_y = datasets[2]
-        test_or_train = '_test'
+        test_data_str = '_test'
+    elif (test_data == 'validation'):
+        test_set_x, test_set_y = datasets[1]
+        test_data_str = '_validation'
+    elif (test_data=='train'):
+        test_set_x, test_set_y = datasets[0]
+        test_data_str = '_train'
 
     index = T.lscalar()
     hidden_output = activation_mlp(T.dot(test_set_x[index], params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
+    infofunc = theano.function([index], p_y_given_x)
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
     range= test_set_x.shape[0].eval()
     wrongpredictions = []
@@ -505,11 +491,13 @@ def predict_mlp_all_fast(filename, test_train_data=False, saveToFile=False, show
         pred = testfunc(j)
         if not(pred[0] == pred[1]):
             print ("The predicted value " + str(pred[0]) + " at index " + str(j) + " is wrong. The correct value is " + str(pred[1]) +".")
-            if showImages:
-                wrongpredictions.append([j,int(pred[0]),int(pred[1]), test_set_x[j]])
+            wrongpredictions.append([j,int(pred[0]),int(pred[1]), test_set_x[j]])
+            if diagnose:
+                print(infofunc(j))
+                print('---')
     print ('There are ' + str(len(wrongpredictions)) + ' errors.')
     if saveToFile:
-        gg = open('../data/mlp_test_errors'+test_or_train+'.pkl', 'wb')
+        gg = open('../data/mlp_test_errors'+test_data_str+'.pkl', 'wb')
         pickle.dump(wrongpredictions, gg, protocol=pickle.HIGHEST_PROTOCOL)
         gg.close()
     return wrongpredictions

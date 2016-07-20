@@ -1,7 +1,7 @@
 import cPickle as pickle
 from os import listdir
 from os.path import isfile, join
-from SdA_modified import predict_all_mnist_test_images_sda,predict_custom_image_sda
+from SdA_modified import predict_mnist_sda,predict_custom_image_sda
 
 paramsFilename = '../data/models/best_model_sda_3_50.pkl'
 
@@ -21,5 +21,5 @@ for file in files:
 print(str(n_tot - n_right) + ' wrong predictions out of ' + str(n_tot))
 
 #Test_2
-predict_all_mnist_test_images_sda(paramsFilename)
+#predict_mnist_sda(paramsFilename)
 

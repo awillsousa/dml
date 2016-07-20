@@ -401,7 +401,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
 def experiment(state, channel):
     evaluate_lenet5(state.learning_rate, dataset=state.dataset)
 
-def predict_on_mnist(modelfilename, activation=activation_convmlp, test_train_data=False, saveToFile=False):
+def predict_on_mnist(modelfilename, activation=activation_convmlp, test_data='test', saveToFile=False):
 
     gg = open(modelfilename, 'rb')
     params = pickle.load(gg)
@@ -413,13 +413,17 @@ def predict_on_mnist(modelfilename, activation=activation_convmlp, test_train_da
     poolsize = (2, 2)
 
     dataset = 'mnist.pkl.gz'
-    datasets = load_data(dataset)
-    if (test_train_data):
-        test_set_x, test_set_y = datasets[0]
-        test_or_train = '_train'
-    else:
+    datasets = load_data(
+        dataset)
+    if (test_data == 'test'):
         test_set_x, test_set_y = datasets[2]
-        test_or_train = '_test'
+        test_data_str = '_test'
+    elif (test_data == 'validation'):
+        test_set_x, test_set_y = datasets[1]
+        test_data_str = '_validation'
+    elif (test_data == 'train'):
+        test_set_x, test_set_y = datasets[0]
+        test_data_str = '_train'
 
     index = T.lscalar()
     layer0_input = test_set_x[index].reshape((batch_size, 1, 28, 28))
@@ -472,7 +476,7 @@ def predict_on_mnist(modelfilename, activation=activation_convmlp, test_train_da
             wrongpredictions.append([j, prediction[0], prediction[1]])
     print('There are ' + str(len(wrongpredictions)) + ' errors.')
     if saveToFile:
-        gg = open('../data/lenet_test_errors' + test_or_train + '.pkl', 'wb')
+        gg = open('../data/lenet_test_errors' + test_data_str + '.pkl', 'wb')
         pickle.dump(wrongpredictions, gg, protocol=pickle.HIGHEST_PROTOCOL)
         gg.close()
 
