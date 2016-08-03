@@ -90,6 +90,16 @@ def plot_vertex_images(title = None, rangeimg=None):
     plt.yticks([])
     plt.title(title)
 
+#----------------------------------------------------------------------
+# Projection on to the first 2 linear discriminant components
+print("Computing Linear Discriminant Analysis projection")
+X2 = X.copy()
+X2.flat[::X.shape[1] + 1] += 0.01  # Make X invertible
+t0 = time()
+X_lda = discriminant_analysis.LinearDiscriminantAnalysis(n_components=2).fit_transform(X2, y)
+plot_embedding(X_lda,
+               "Linear Discriminant projection of the digits (time %.2fs)" %
+               (time() - t0))
 
 #----------------------------------------------------------------------
 # Random 2D projection using a random unitary matrix
@@ -108,17 +118,6 @@ if showAll:
     plot_embedding(X_pca,
                    "Principal Components projection of the digits (time %.2fs)" %
                    (time() - t0))
-
-#----------------------------------------------------------------------
-# Projection on to the first 2 linear discriminant components
-print("Computing Linear Discriminant Analysis projection")
-X2 = X.copy()
-X2.flat[::X.shape[1] + 1] += 0.01  # Make X invertible
-t0 = time()
-X_lda = discriminant_analysis.LinearDiscriminantAnalysis(n_components=2).fit_transform(X2, y)
-plot_embedding(X_lda,
-               "Linear Discriminant projection of the digits (time %.2fs)" %
-               (time() - t0))
 
 #----------------------------------------------------------------------
 # Modified Locally linear embedding of the digits dataset
