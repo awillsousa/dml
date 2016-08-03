@@ -1,4 +1,4 @@
-# Cf. http://scikit-learn.org/stable/auto_examples/manifold/plot_lle_digits.htmlfrom time import time
+# Cf. http://scikit-learn.org/stable/auto_examples/manifold/plot_lle_digits.html
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ f = gzip.open(filename, 'rb')
 test_data = pickle.load(f)[0]
 f.close()
 
-showAll = False
+showAll = True
 plotVertexImages = True
 testlen = 5000
 start=0
@@ -34,7 +34,6 @@ n_neighbors = 30
 # Scale and visualize the embedding vectors
 def plot_embedding(X, title=None):
     plt.figure()
-    ax = plt.subplot(111)
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
     points = [[] for k in range(len(target_values))]
