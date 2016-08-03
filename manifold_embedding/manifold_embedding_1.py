@@ -14,7 +14,7 @@ f = gzip.open(filename, 'rb')
 test_data = pickle.load(f)[0]
 f.close()
 
-showAll = True
+showAll = False
 plotVertexImages = True
 testlen = 5000
 start=0
