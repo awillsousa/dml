@@ -9,31 +9,22 @@ from sklearn import (manifold, datasets, decomposition, ensemble,
 from scipy.spatial import ConvexHull
 from time import time
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-test_data = pickle.load(f)[0]
-f.close()
 
-showAll = False
-plotVertexImages = True
-testlen = 5000
-start=0
+showAll = True
+plotVertexImages = False
+testlen = 1000
+start=30000
 
-target_values = np.array([7, 1, 2])
+target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 colors = target_values / 10.
-chosens = [index for index in range(start, start+testlen) if test_data[1][index] in target_values]
 
-indexes = np.asarray([i for i in chosens])
-X = np.asarray([test_data[0][i] for i in chosens])
-y = np.asarray([test_data[1][i] for i in chosens])
 
-n_samples, n_features = X.shape
 n_neighbors = 30
 
 #----------------------------------------------------------------------
 # Scale and visualize the embedding vectors
-def plot_embedding(X, title=None):
-    plt.figure()
+def plot_embedding(X, y, title=None):
+    plt.figure(figsize=(8, 7))
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
     points = [[] for k in range(len(target_values))]
@@ -45,14 +36,14 @@ def plot_embedding(X, title=None):
                          fontdict={'weight': 'bold', 'size': 9})
                 points[j].append([X[i, 0], X[i, 1]])
                 break
-
-    vertexindexes =[]
-    for j in range(len(target_values)):
-        the_points = np.asarray(points[j])
-        hull = ConvexHull(np.asarray(the_points))
-        for simplex in hull.simplices:
-            plt.plot(the_points[simplex, 0], the_points[simplex, 1], color=plt.cm.Set1(colors[j]), ls='-')
-        vertexindexes.append(hull.vertices)
+    if plotVertexImages:
+        vertexindexes =[]
+        for j in range(len(target_values)):
+            the_points = np.asarray(points[j])
+            hull = ConvexHull(np.asarray(the_points))
+            for simplex in hull.simplices:
+                plt.plot(the_points[simplex, 0], the_points[simplex, 1], color=plt.cm.Set1(colors[j]), ls='-')
+            vertexindexes.append(hull.vertices)
     plt.xticks([]), plt.yticks([])
     if title is not None:
         plt.title(title)
@@ -81,7 +72,7 @@ def plot_vertex_images(title = None, rangeimg=None):
                 breakk = True
                 break
             iy = 28 * j
-            img[ix:ix + 28, iy:iy + 28] = X[rangeimg[targ_val][the_index]].reshape((28, 28))
+            img[ix:ix + 28, iy:iy + 28] = X_data[rangeimg[targ_val][the_index]].reshape((28, 28))
         if breakk:
             break
     plt.figure()
@@ -92,97 +83,115 @@ def plot_vertex_images(title = None, rangeimg=None):
 
 #----------------------------------------------------------------------
 # Projection on to the first 2 linear discriminant components
-print("Computing Linear Discriminant Analysis projection")
-X2 = X.copy()
-X2.flat[::X.shape[1] + 1] += 0.01  # Make X invertible
-t0 = time()
-X_lda = discriminant_analysis.LinearDiscriminantAnalysis(n_components=2).fit_transform(X2, y)
-plot_embedding(X_lda,
-               "Linear Discriminant projection of the digits (time %.2fs)" %
-               (time() - t0))
+def ldp(X, y ,nr_components=2):
+    print("Computing Linear Discriminant Analysis projection")
+    X2 = X.copy()
+    X2.flat[::X.shape[1] + 1] += 0.01  # Make X invertible
+    return discriminant_analysis.LinearDiscriminantAnalysis(n_components=nr_components).fit_transform(X2, y)
 
 #----------------------------------------------------------------------
 # Random 2D projection using a random unitary matrix
-if showAll:
-    rp = random_projection.SparseRandomProjection(n_components=2, random_state=42)
-    X_projected = rp.fit_transform(X)
-    plot_embedding(X_projected, "Random Projection of the digits")
+def rp(X, nr_components=2):
+    rp = random_projection.SparseRandomProjection(n_components=nr_components, random_state=42)
+    return rp.fit_transform(X)
+
 
 
 #----------------------------------------------------------------------
 # Projection on to the first 2 principal components
-if showAll:
+def pca(X, nr_components=2):
     print("Computing PCA projection")
-    t0 = time()
-    X_pca = decomposition.TruncatedSVD(n_components=2).fit_transform(X)
-    plot_embedding(X_pca,
-                   "Principal Components projection of the digits (time %.2fs)" %
-                   (time() - t0))
+    return decomposition.TruncatedSVD(n_components=nr_components).fit_transform(X)
+
 
 #----------------------------------------------------------------------
 # Modified Locally linear embedding of the digits dataset
-if showAll:
+def lle(X, nr_components=2):
     print("Computing modified LLE embedding")
-    clf = manifold.LocallyLinearEmbedding(n_neighbors, n_components=2,
+    clf = manifold.LocallyLinearEmbedding(n_neighbors, n_components=nr_components,
                                           method='modified')
-    t0 = time()
     X_mlle = clf.fit_transform(X)
     print("Done. Reconstruction error: %g" % clf.reconstruction_error_)
-    plot_embedding(X_mlle,
-                   "Modified Locally Linear Embedding of the digits (time %.2fs)" %
-                   (time() - t0))
-
-
+    return X_mlle
 
 
 #----------------------------------------------------------------------
 # MDS  embedding of the digits dataset
-if showAll:
+def md5(X, nr_components=2):
     print("Computing MDS embedding")
-    clf = manifold.MDS(n_components=2, n_init=1, max_iter=100)
+    clf = manifold.MDS(n_components=nr_components, n_init=1, max_iter=100)
     t0 = time()
     X_mds = clf.fit_transform(X)
     print("Done. Stress: %f" % clf.stress_)
-    plot_embedding(X_mds,
-                   "MDS embedding of the digits (time %.2fs)" %
-                   (time() - t0))
+    return X_mds
 
 #----------------------------------------------------------------------
 # Random Trees embedding of the digits dataset
-if showAll:
+def trt(X, nr_components=2):
     print("Computing Totally Random Trees embedding")
     hasher = ensemble.RandomTreesEmbedding(n_estimators=200, random_state=0,
                                            max_depth=5)
     t0 = time()
     X_transformed = hasher.fit_transform(X)
-    pca = decomposition.TruncatedSVD(n_components=2)
-    X_reduced = pca.fit_transform(X_transformed)
-
-    plot_embedding(X_reduced,
-                   "Random forest embedding of the digits (time %.2fs)" %
-                   (time() - t0))
+    pca = decomposition.TruncatedSVD(n_components=nr_components)
+    return pca.fit_transform(X_transformed)
 
 #----------------------------------------------------------------------
 # Spectral embedding of the digits dataset
-if showAll:
+def cse(X, nr_components=2):
     print("Computing Spectral embedding")
-    embedder = manifold.SpectralEmbedding(n_components=2, random_state=0,
+    embedder = manifold.SpectralEmbedding(n_components=nr_components, random_state=0,
                                           eigen_solver="arpack")
-    t0 = time()
-    X_se = embedder.fit_transform(X)
+    return embedder.fit_transform(X)
 
-    plot_embedding(X_se,
-                   "Spectral embedding of the digits (time %.2fs)" %
-                   (time() - t0))
 
-if showAll:
+def tsne(X, nr_components=2):
     print("Computing t-SNE embedding")
-    tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
+    tsne = manifold.TSNE(n_components=nr_components, init='pca', random_state=0)
+    return tsne.fit_transform(X)
+
+
+if __name__ == '__main__':
+    filename = "../data/mnist.pkl.gz"
+    f = gzip.open(filename, 'rb')
+    test_data = pickle.load(f)[0]
+    f.close()
+
+    chosens = [index for index in range(start, start + testlen) if test_data[1][index] in target_values]
+
+    indexes = np.asarray([i for i in chosens])
+    X_data = np.asarray([test_data[0][i] for i in chosens])
+    y_data = np.asarray([test_data[1][i] for i in chosens])
+
+
+    if showAll:
+        t0 = time()
+        plot_embedding(tsne(X_data), y_data,
+                       "t-SNE embedding of the digits (time %.2fs)" %
+                       (time() - t0))
+        t0 = time()
+        plot_embedding(cse(X_data), y_data,
+                       "Spectral embedding of the digits (time %.2fs)" %
+                       (time() - t0))
+        t0 = time()
+        plot_embedding(trt(X_data), y_data,
+                       "Random forest embedding of the digits (time %.2fs)" %
+                       (time() - t0))
+        t0 = time()
+        plot_embedding(md5(X_data), y_data,
+                       "MDS embedding of the digits (time %.2fs)" %
+                       (time() - t0))
+
+        plot_embedding(lle(X_data), y_data,
+                       "Modified Locally Linear Embedding of the digits (time %.2fs)" %
+                       (time() - t0))
+        t0 = time()
+        plot_embedding(pca(X_data), y_data,
+                       "Principal Components projection of the digits (time %.2fs)" %
+                       (time() - t0))
+        plot_embedding(rp(X_data), y_data, "Random Projection of the digits")
     t0 = time()
-    X_tsne = tsne.fit_transform(X)
-
-    plot_embedding(X_tsne,
-                   "t-SNE embedding of the digits (time %.2fs)" %
+    plot_embedding(ldp(X_data, y_data), y_data,
+                   "Linear Discriminant projection of the digits (time %.2fs)" %
                    (time() - t0))
-
-plt.show()
+    plt.show()
