@@ -10,7 +10,7 @@ from scipy.spatial import ConvexHull
 from time import time
 
 
-showAll = True
+showAll = False
 plotVertexImages = False
 testlen = 1000
 start=30000
@@ -147,21 +147,21 @@ def cse(X, nr_components=2):
 
 def tsne(X, nr_components=2):
     print("Computing t-SNE embedding")
-    tsne = manifold.TSNE(n_components=nr_components, init='pca', random_state=0)
+    tsne = manifold.TSNE(n_components=nr_components, init='random', random_state=0)
     return tsne.fit_transform(X)
 
 
 if __name__ == '__main__':
     filename = "../data/mnist.pkl.gz"
     f = gzip.open(filename, 'rb')
-    test_data = pickle.load(f)[0]
+    train_data = pickle.load(f)[0]
     f.close()
 
-    chosens = [index for index in range(start, start + testlen) if test_data[1][index] in target_values]
+    chosens = [index for index in range(start, start + testlen) if train_data[1][index] in target_values]
 
     indexes = np.asarray([i for i in chosens])
-    X_data = np.asarray([test_data[0][i] for i in chosens])
-    y_data = np.asarray([test_data[1][i] for i in chosens])
+    X_data = np.asarray([train_data[0][i] for i in chosens])
+    y_data = np.asarray([train_data[1][i] for i in chosens])
 
 
     if showAll:

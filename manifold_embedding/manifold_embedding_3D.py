@@ -31,33 +31,23 @@ def plot_embedding(X, y,  title=None):
     if title is not None:
         plt.title(title)
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-test_data = pickle.load(f)[0]
-f.close()
 
 testlen = 1000
 start=30000
 target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-chosens = [index for index in range(start, start+testlen) if test_data[1][index] in target_values]
-
-indexes = np.asarray([i for i in chosens])
-X_data = np.asarray([test_data[0][i] for i in chosens])
-y = np.asarray([test_data[1][i] for i in chosens])
-
 
 if __name__ == '__main__':
     filename = "../data/mnist.pkl.gz"
     f = gzip.open(filename, 'rb')
-    test_data = pickle.load(f)[0]
+    train_data = pickle.load(f)[0]
     f.close()
 
-    chosens = [index for index in range(start, start + testlen) if test_data[1][index] in target_values]
+    chosens = [index for index in range(start, start + testlen) if train_data[1][index] in target_values]
 
     indexes = np.asarray([i for i in chosens])
-    X_data = np.asarray([test_data[0][i] for i in chosens])
-    y_data = np.asarray([test_data[1][i] for i in chosens])
+    X_data = np.asarray([train_data[0][i] for i in chosens])
+    y_data = np.asarray([train_data[1][i] for i in chosens])
 
 
     if showAll:
