@@ -35,14 +35,24 @@ print("Computing Linear Discriminant Analysis projection")
 X_train = X_data_train.copy()
 X_train.flat[::X_data_train.shape[1] + 1] += 0.01  # Make X_data invertible
 lda = discriminant_analysis.LinearDiscriminantAnalysis().fit(X_train, y_data_train)
-Y_pred_test = lda.predict(X_data_test)
-num_errors = 0
-len_test = len(Y_pred_test)
+Y_pred_test_lda = lda.predict(X_data_test)
+num_errors_lda = 0
+len_test = len(Y_pred_test_lda)
 for i in range(0, len_test):
-    if (Y_pred_test[i] != y_data_test[i]):
-        num_errors += 1
-        print('Wrong prediction ' + str(Y_pred_test[i]) + ' != ' + str(y_data_test[i]))
-print( str(num_errors) + ' wrong predictions out of ' + str(len_test) + ' - ' + str(num_errors * 100/len_test))
-print ("{:4.2f}".format(num_errors * 100/len_test) + '% error rate ')
+    if (Y_pred_test_lda[i] != y_data_test[i]):
+        num_errors_lda += 1
+        #print('Wrong prediction ' + str(Y_pred_test[i]) + ' != ' + str(y_data_test[i]))
+print('LDA ' + str(num_errors_lda) + ' wrong predictions out of ' + str(len_test) )
+print ('LDA ' +"{:4.2f}".format(num_errors_lda * 100 / len_test) + '% error rate ')
+
+qda = discriminant_analysis.QuadraticDiscriminantAnalysis().fit(X_train, y_data_train)
+num_errors_qda = 0
+Y_pred_test_qda = qda.predict(X_data_test)
+for i in range(0, len_test):
+    if (Y_pred_test_qda[i] != y_data_test[i]):
+        num_errors_qda += 1
+        #print('Wrong prediction ' + str(Y_pred_test[i]) + ' != ' + str(y_data_test[i]))
+print('QDA ' + str(num_errors_qda) + ' wrong predictions out of ' + str(len_test))
+print ('QDA ' +"{:4.2f}".format(num_errors_qda * 100 / len_test) + '% error rate ')
 
 
