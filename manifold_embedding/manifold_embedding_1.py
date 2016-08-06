@@ -10,7 +10,7 @@ from scipy.spatial import ConvexHull
 from time import time
 
 
-showAll = False
+showAll = True
 plotVertexImages = False
 testlen = 1000
 start=30000
@@ -18,8 +18,6 @@ start=30000
 target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 colors = target_values / 10.
 
-
-n_neighbors = 30
 
 #----------------------------------------------------------------------
 # Scale and visualize the embedding vectors
@@ -106,7 +104,7 @@ def pca(X, nr_components=2):
 
 #----------------------------------------------------------------------
 # Modified Locally linear embedding of the digits dataset
-def lle(X, nr_components=2):
+def lle(X, nr_components=2, n_neighbors = 30):
     print("Computing modified LLE embedding")
     clf = manifold.LocallyLinearEmbedding(n_neighbors, n_components=nr_components,
                                           method='modified')
