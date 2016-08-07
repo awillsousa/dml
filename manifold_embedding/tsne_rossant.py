@@ -9,6 +9,7 @@ from numpy import linalg
 from numpy.linalg import norm
 from scipy.spatial.distance import squareform, pdist
 
+
 # We import sklearn.
 import sklearn
 from sklearn.manifold import TSNE
@@ -270,6 +271,6 @@ cauchy = 1/(1+z**2)
 plt.plot(z, gauss, label='Gaussian distribution')
 plt.plot(z, cauchy, label='Cauchy distribution')
 plt.legend()
-plt.savefig('images/distributions-generated.png', dpi=100)
+plt.savefig(imgpath + 'distributions-generated.png', dpi=100)
 
 
