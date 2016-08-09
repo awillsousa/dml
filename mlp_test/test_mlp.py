@@ -29,8 +29,8 @@ def test_2():
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 # Test 3
-def test_3():
-    wrongpredictions = predict_mlp_all_fast(filename, test_data='train', saveToFile=False, diagnose=False)
+def test_3(data_set='train'):
+    wrongpredictions = predict_mlp_all_fast(filename, test_data=data_set, saveToFile=False, diagnose=False)
     i = 1
     a = min(10, isqrt(len(wrongpredictions)) + 1)
     for wimg in wrongpredictions:
