@@ -401,7 +401,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
 def experiment(state, channel):
     evaluate_lenet5(state.learning_rate, dataset=state.dataset)
 
-def predict_on_mnist(modelfilename, activation=activation_convmlp, test_data='test', saveToFile=False):
+def predict_on_mnist(modelfilename, activation=activation_convmlp, test_data='test', saveToFile=False, diagnose = False):
 
     gg = open(modelfilename, 'rb')
     params = pickle.load(gg)
@@ -464,7 +464,9 @@ def predict_on_mnist(modelfilename, activation=activation_convmlp, test_data='te
     final_output = T.dot(output_2, params[0]) + params[1]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
+    ind_arr = numpy.arange(10, dtype=numpy.uint8)
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
+    infofunc = theano.function([index], p_y_given_x)
     range = test_set_x.shape[0].eval()
     wrongpredictions = []
     for j in xrange(range):
@@ -473,12 +475,17 @@ def predict_on_mnist(modelfilename, activation=activation_convmlp, test_data='te
         if correct == False:
             print('The prediction ' + str(prediction[0]) + ' for index ' + str(j) + '  is wrong . The correct value is '
                   + str(prediction[1]) + '.')
-            wrongpredictions.append([j, prediction[0], prediction[1]])
+            if diagnose:
+                err_arr = sorted(zip(ind_arr,infofunc(j)[0]), key=lambda x: x[1], reverse=True)
+                print(err_arr)
+                print('---')
+            wrongpredictions.append([j, prediction[0], prediction[1], test_set_x[j]])
     print('There are ' + str(len(wrongpredictions)) + ' errors.')
     if saveToFile:
         gg = open('../data/lenet_test_errors' + test_data_str + '.pkl', 'wb')
         pickle.dump(wrongpredictions, gg, protocol=pickle.HIGHEST_PROTOCOL)
         gg.close()
+    return wrongpredictions
 
 def predict_custom_image(params, testImgFilename='own_0.png', activation= activation_convmlp):
 

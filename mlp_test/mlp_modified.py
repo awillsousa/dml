@@ -483,6 +483,7 @@ def predict_mlp_all_fast(filename, test_data='test', saveToFile=False, diagnose=
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
+    ind_arr = numpy.arange(10, dtype=numpy.uint8)
     infofunc = theano.function([index], p_y_given_x)
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
     range= test_set_x.shape[0].eval()
@@ -493,7 +494,8 @@ def predict_mlp_all_fast(filename, test_data='test', saveToFile=False, diagnose=
             print ("The predicted value " + str(pred[0]) + " at index " + str(j) + " is wrong. The correct value is " + str(pred[1]) +".")
             wrongpredictions.append([j,int(pred[0]),int(pred[1]), test_set_x[j]])
             if diagnose:
-                print(infofunc(j))
+                err_arr = sorted(zip(ind_arr,infofunc(j)[0]), key=lambda x: x[1], reverse=True)
+                print(err_arr)
                 print('---')
     print ('There are ' + str(len(wrongpredictions)) + ' errors.')
     if saveToFile:

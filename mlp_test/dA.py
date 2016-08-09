@@ -44,7 +44,7 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 from mlp_modified import load_data
-from utils import tile_raster_images
+from mlp_utils import tile_raster_images
 
 try:
     import PIL.Image as Image

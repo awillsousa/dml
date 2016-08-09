@@ -26,24 +26,26 @@ def test_2():
         n_right += load_and_predict_custom_image(filename,file, int(test_img_value))
     print(str(n_tot - n_right)+ ' wrong predictions out of ' + str(n_tot) )
 
+
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 # Test 3
-def test_3(data_set='train'):
-    wrongpredictions = predict_mlp_all_fast(filename, test_data=data_set, saveToFile=False, diagnose=False)
-    i = 1
-    a = min(10, isqrt(len(wrongpredictions)) + 1)
-    for wimg in wrongpredictions:
-        if ( i < 100):
-            plt.subplot(a, a, i)
-            plt.title(str(wimg[1])+'!='+ str(wimg[2]))
-            fig = plt.imshow(wimg[3].reshape((28, 28)).eval(), cmap=cm.Greys_r)
-            plt.ylabel(str(wimg[0]))
-            fig.axes.get_xaxis().set_ticks([])
-            fig.axes.get_yaxis().set_ticks([])
-            i += 1
-    plt.tight_layout()
-    plt.show()
+def test_3(data_set='train', showImages = False, diagnosys = True ):
+    wrongpredictions = predict_mlp_all_fast(filename, test_data=data_set, saveToFile=False,  diagnose=diagnosys)
+    if showImages:
+        i = 1
+        a = min(10, isqrt(len(wrongpredictions)) + 1)
+        for wimg in wrongpredictions:
+            if ( i < 100):
+                plt.subplot(a, a, i)
+                plt.title(str(wimg[1])+'!='+ str(wimg[2]))
+                fig = plt.imshow(wimg[3].reshape((28, 28)).eval(), cmap=cm.Greys_r)
+                plt.ylabel(str(wimg[0]))
+                fig.axes.get_xaxis().set_ticks([])
+                fig.axes.get_yaxis().set_ticks([])
+                i += 1
+        plt.tight_layout()
+        plt.show()
 
 test_3()
 
