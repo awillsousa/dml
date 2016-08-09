@@ -1,5 +1,5 @@
 from  mlp_modified import predict_mlp,  predict_mlp_all_fast, load_and_predict_custom_image
-from utils import isqrt
+from mlp_utils import isqrt
 
 
 filename = '../data/models/best_model_mlp_500_zero.pkl'
@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 # Test 3
 def test_3():
-    wrongpredictions = predict_mlp_all_fast(filename, test_data='test', saveToFile=False, diagnose=False)
+    wrongpredictions = predict_mlp_all_fast(filename, test_data='train', saveToFile=False, diagnose=False)
     i = 1
     a = min(10, isqrt(len(wrongpredictions)) + 1)
     for wimg in wrongpredictions:
