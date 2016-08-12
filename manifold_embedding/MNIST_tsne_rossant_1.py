@@ -9,7 +9,6 @@ import seaborn as sns
 
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.manifold.t_sne import _joint_probabilities
-from scipy.spatial.distance import squareform
 
 import numpy as np
 from numpy import linalg
@@ -74,7 +73,7 @@ plt.subplot(133)
 plt.imshow(P_binary_s[::10, ::10], interpolation='none', cmap=pal)
 plt.axis('off')
 plt.title("$p_{j|i}$ (variable $\sigma$)", fontdict={'fontsize': 16})
-plt.savefig('../data/pics/mnist-similarity-generated.png', dpi=120)
+plt.savefig(imgpath + 'MNIST-similarity-generated.png', dpi=120)
 
 # Random state.
 RS = 20150101
