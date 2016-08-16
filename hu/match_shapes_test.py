@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import cv2
 from cv2 import matchShapes
+from skimage.measure import compare_ssim
 
 
 filename = "../data/mnist.pkl.gz"
@@ -32,7 +33,7 @@ match_I1 = formatt.format(matchShapes(cnt1, cnt2, cv2.cv.CV_CONTOURS_MATCH_I1,0)
 match_I2 = formatt.format(matchShapes(cnt1, cnt2, cv2.cv.CV_CONTOURS_MATCH_I2,0))
 match_I3 = formatt.format(matchShapes(cnt1, cnt2, cv2.cv.CV_CONTOURS_MATCH_I3,0))
 plt.suptitle("Comparing two images - match_I1 = "+ match_I1+ " match_I2 = "+ match_I2
-             + "match_I3 = " + match_I3)
+             + " match_I3 = " + match_I3 +'\n Structural similarity = ' + formatt.format(compare_ssim(img_arr_1, img_arr_2)))
 plt.subplot(1, 2, 1)
 plt.title(str(img_val_1))
 fig = plt.imshow(img_arr_1, cmap=cm.binary)
