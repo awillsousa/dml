@@ -516,12 +516,12 @@ def testfunction(i, params, test_set_x, test_set_y):
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
     return testfunc(i)
 
-def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
+def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue, testImgFilenameDir='../data/custom/'):
     gg = open(modelFilename, 'rb')
     params = pickle.load(gg)
     gg.close()
 
-    test_img = fli.processImg('../data/custom/', testImgFilename)
+    test_img = fli.processImg(testImgFilenameDir, testImgFilename)
     hidden_output = activation_mlp(T.dot(test_img, params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)

@@ -8,21 +8,19 @@ paramsFilename = '../data/models/best_model_convolutional_mlp_1000_zero.pkl'
 from os import listdir
 from os.path import isfile, join
 
-def test_1():
+def test_1(path = '../data/custom'):
     gg = open(paramsFilename, 'rb')
     params = pickle.load(gg)
     gg.close()
-    path = '../data/custom'
     files = [f for f in listdir(path) if isfile(join(path, f))]
     n_right = 0
     n_tot = len(files)
     for file in files:
         test_img_value = filter(str.isdigit, file)
-        n_right += predict_custom_image(params,file)
+        n_right += predict_custom_image(params,file, testImgFilenameDir = path)
     print(str(n_tot - n_right) + ' wrong predictions out of ' + str(n_tot))
 
-
-#test_1()
+test_1(path = '../data/pics/uic')
 
 # Test 2
 import matplotlib.pyplot as plt
@@ -45,6 +43,6 @@ def test_2(filename, data_set='validation',  diagnosys=True, showImages= True):
         plt.tight_layout()
         plt.show()
 
-test_2(filename  = paramsFilename )
+#test_2(filename  = paramsFilename )
 
 #predict_on_mnist(paramsFilename, test_data='validation', saveToFile=False)

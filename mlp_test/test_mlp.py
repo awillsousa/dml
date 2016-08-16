@@ -16,16 +16,16 @@ def test_1():
 # Test 2
 from os import listdir
 from os.path import isfile, join
-def test_2():
-    path = '../data/custom'
+def test_2(path = '../data/custom'):
     files = [f for f in listdir(path) if isfile(join(path, f))]
     n_right = 0
     n_tot = len(files)
     for file in files:
         test_img_value = filter(str.isdigit, file)
-        n_right += load_and_predict_custom_image(filename,file, int(test_img_value))
+        n_right += load_and_predict_custom_image(filename,file, int(test_img_value), testImgFilenameDir = path)
     print(str(n_tot - n_right)+ ' wrong predictions out of ' + str(n_tot) )
 
+test_2(path = '../data/pics/uic')
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -47,7 +47,6 @@ def test_3(data_set='train', showImages = False, diagnosys = True ):
         plt.tight_layout()
         plt.show()
 
-test_3()
 
 def test_4(example_index):
     b = predict_mlp(filename, example_index, test_train_data = True)

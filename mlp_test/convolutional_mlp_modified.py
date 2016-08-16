@@ -487,11 +487,11 @@ def predict_on_mnist(modelfilename, activation=activation_convmlp, test_data='te
         gg.close()
     return wrongpredictions
 
-def predict_custom_image(params, testImgFilename='own_0.png', activation= activation_convmlp):
+def predict_custom_image(params, testImgFilename='own_0.png', activation= activation_convmlp, testImgFilenameDir = '../data/custom/'):
 
     test_img_value = filter(str.isdigit, testImgFilename)
 
-    test_img = fli.processImg('../data/custom/', testImgFilename)
+    test_img = fli.processImg(testImgFilenameDir, testImgFilename)
 
     nkerns = [20, 50]
     batch_size = 1
