@@ -44,7 +44,7 @@ import cPickle as pickle
 
 import logging
 
-from data_utils import get_blurred_sets, shuffle_in_unison, save_model, load_params
+from data_utils import get_blurred_sets, get_rotated_sets,shuffle_in_unison, save_model, load_params
 
 add_blurs = False
 testrun = False
@@ -365,7 +365,7 @@ class LogisticRegression(object):
             raise NotImplementedError()
 
 
-def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False):
+def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False, angles = []):
     ''' Loads the dataset
 
     :type dataset: string
@@ -413,6 +413,10 @@ def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False):
     if add_the_blurs:
         blur_set = get_blurred_sets(train_set[0], train_set[1], blur)
         train_set = shuffle_in_unison(numpy.concatenate((train_set[0], blur_set[0])), numpy.concatenate((train_set[1], blur_set[1])))
+    if len(angles)>0:
+        for the_angle in angles:
+            rotated_set = get_rotated_sets(train_set[0], train_set[1], the_angle)
+            train_set = shuffle_in_unison(numpy.concatenate((train_set[0], rotated_set[0])),                                          numpy.concatenate((train_set[1], rotated_set[1])))
     if replace_images:
         test_set_x, test_set_y = train_set
         j = 0
@@ -483,6 +487,7 @@ def predict_mlp_all_fast(filename, test_data='test', saveToFile=False, diagnose=
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)
     y_pred = T.argmax(p_y_given_x, axis=1)
+    ind_arr = numpy.arange(10, dtype=numpy.uint8)
     infofunc = theano.function([index], p_y_given_x)
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
     range= test_set_x.shape[0].eval()
@@ -493,7 +498,8 @@ def predict_mlp_all_fast(filename, test_data='test', saveToFile=False, diagnose=
             print ("The predicted value " + str(pred[0]) + " at index " + str(j) + " is wrong. The correct value is " + str(pred[1]) +".")
             wrongpredictions.append([j,int(pred[0]),int(pred[1]), test_set_x[j]])
             if diagnose:
-                print(infofunc(j))
+                err_arr = sorted(zip(ind_arr,infofunc(j)[0]), key=lambda x: x[1], reverse=True)
+                print(err_arr)
                 print('---')
     print ('There are ' + str(len(wrongpredictions)) + ' errors.')
     if saveToFile:
@@ -514,12 +520,12 @@ def testfunction(i, params, test_set_x, test_set_y):
     testfunc = theano.function([index], [y_pred[0], test_set_y[index]])
     return testfunc(i)
 
-def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue):
+def load_and_predict_custom_image(modelFilename, testImgFilename, testImgvalue, testImgFilenameDir='../data/custom/'):
     gg = open(modelFilename, 'rb')
     params = pickle.load(gg)
     gg.close()
 
-    test_img = fli.processImg('../data/custom/', testImgFilename)
+    test_img = fli.processImg(testImgFilenameDir, testImgFilename)
     hidden_output = activation_mlp(T.dot(test_img, params[0]) + params[1])
     final_output = T.dot(hidden_output, params[2]) + params[3]
     p_y_given_x = T.nnet.softmax(final_output)

@@ -1,5 +1,5 @@
 from  mlp_modified import predict_mlp,  predict_mlp_all_fast, load_and_predict_custom_image
-from utils import isqrt
+from mlp_utils import isqrt
 
 
 filename = '../data/models/best_model_mlp_500_zero.pkl'
@@ -16,36 +16,37 @@ def test_1():
 # Test 2
 from os import listdir
 from os.path import isfile, join
-def test_2():
-    path = '../data/custom'
+def test_2(path = '../data/custom'):
     files = [f for f in listdir(path) if isfile(join(path, f))]
     n_right = 0
     n_tot = len(files)
     for file in files:
         test_img_value = filter(str.isdigit, file)
-        n_right += load_and_predict_custom_image(filename,file, int(test_img_value))
+        n_right += load_and_predict_custom_image(filename,file, int(test_img_value), testImgFilenameDir = path)
     print(str(n_tot - n_right)+ ' wrong predictions out of ' + str(n_tot) )
+
+test_2(path = '../data/pics/uic')
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 # Test 3
-def test_3():
-    wrongpredictions = predict_mlp_all_fast(filename, test_data='test', saveToFile=False, diagnose=False)
-    i = 1
-    a = min(10, isqrt(len(wrongpredictions)) + 1)
-    for wimg in wrongpredictions:
-        if ( i < 100):
-            plt.subplot(a, a, i)
-            plt.title(str(wimg[1])+'!='+ str(wimg[2]))
-            fig = plt.imshow(wimg[3].reshape((28, 28)).eval(), cmap=cm.Greys_r)
-            plt.ylabel(str(wimg[0]))
-            fig.axes.get_xaxis().set_ticks([])
-            fig.axes.get_yaxis().set_ticks([])
-            i += 1
-    plt.tight_layout()
-    plt.show()
+def test_3(data_set='train', showImages = False, diagnosys = True ):
+    wrongpredictions = predict_mlp_all_fast(filename, test_data=data_set, saveToFile=False,  diagnose=diagnosys)
+    if showImages:
+        i = 1
+        a = min(10, isqrt(len(wrongpredictions)) + 1)
+        for wimg in wrongpredictions:
+            if ( i < 100):
+                plt.subplot(a, a, i)
+                plt.title(str(wimg[1])+'!='+ str(wimg[2]))
+                fig = plt.imshow(wimg[3].reshape((28, 28)).eval(), cmap=cm.Greys_r)
+                plt.ylabel(str(wimg[0]))
+                fig.axes.get_xaxis().set_ticks([])
+                fig.axes.get_yaxis().set_ticks([])
+                i += 1
+        plt.tight_layout()
+        plt.show()
 
-test_3()
 
 def test_4(example_index):
     b = predict_mlp(filename, example_index, test_train_data = True)

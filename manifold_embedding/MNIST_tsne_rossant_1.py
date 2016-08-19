@@ -1,63 +1,84 @@
-# see https://www.oreilly.com/learning/an-illustrated-introduction-to-the-t-sne-algorithm
-# The original code does not work due to https://github.com/scikit-learn/scikit-learn/issues/6450 and a inaccessible websites
-#  for writing files.
-# Fixed here.
+# cp. https://www.oreilly.com/learning/an-illustrated-introduction-to-the-t-sne-algorithm
 
-# That's an impressive list of imports.
+import numpy as np
+import matplotlib.pyplot as plt
+import gzip
+import cPickle as pickle
+
+import seaborn as sns
+
+from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.manifold.t_sne import _joint_probabilities
+
 import numpy as np
 from numpy import linalg
 from numpy.linalg import norm
 from scipy.spatial.distance import squareform, pdist
 
-# We import sklearn.
 import sklearn
 from sklearn.manifold import TSNE
-from sklearn.datasets import load_digits
 
-# We'll hack a bit with the t-SNE code in sklearn 0.15.2.
-from sklearn.metrics.pairwise import pairwise_distances
-from sklearn.manifold.t_sne import (_joint_probabilities)
+from moviepy.video.io.bindings import mplfig_to_npimage
+import moviepy.editor as mpy
+
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as PathEffects
+
+
+imgpath='../data/pics/'
+
+testlen = 2000
+start=0
+
+target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+filename = "../data/mnist.pkl.gz"
+f = gzip.open(filename, 'rb')
+data_set = pickle.load(f)[0]
+f.close()
+
+chosens = [(index,data_set[1][index])  for index in range(start, start + testlen) if data_set[1][index] in target_values]
+
+sorted_chosens = np.asarray(sorted(chosens, key=lambda target: target[1]))
+X_data = np.asarray(data_set[0][sorted_chosens[:,0]])
+y_data = np.asarray([data_set[1][sorted_chosens[:,0]]])[0]
+
+def _joint_probabilities_constant_sigma(D, sigma):
+    P = np.exp(-D**2/2 * sigma**2)
+    P /= np.sum(P, axis=1)
+    return P
+# Pairwise distances between all data points.
+D = pairwise_distances(X_data, squared=True)
+# Similarity with constant sigma.
+P_constant = _joint_probabilities_constant_sigma(D, .002)
+# Similarity with variable sigma.
+P_binary = _joint_probabilities(D, 30., False)
+# The output of this function needs to be reshaped to a square matrix.
+P_binary_s = squareform(P_binary)
+
+plt.figure(figsize=(12, 4))
+pal = sns.light_palette("blue", as_cmap=True)
+
+plt.subplot(131)
+plt.imshow(D[::10, ::10], interpolation='none', cmap=pal)
+plt.axis('off')
+plt.title("Distance matrix", fontdict={'fontsize': 16})
+
+plt.subplot(132)
+plt.imshow(P_constant[::10, ::10], interpolation='none', cmap=pal)
+plt.axis('off')
+plt.title("$p_{j|i}$ (constant $\sigma$)", fontdict={'fontsize': 16})
+
+plt.subplot(133)
+plt.imshow(P_binary_s[::10, ::10], interpolation='none', cmap=pal)
+plt.axis('off')
+plt.title("$p_{j|i}$ (variable $\sigma$)", fontdict={'fontsize': 16})
+plt.savefig(imgpath + 'MNIST-similarity-generated.png', dpi=120)
 
 # Random state.
 RS = 20150101
 
-# We'll use matplotlib for graphics.
-import matplotlib.pyplot as plt
-import matplotlib.patheffects as PathEffects
-
-# We import seaborn to make nice plots.
-import seaborn as sns
-sns.set_style('darkgrid')
-sns.set_palette('muted')
-sns.set_context("notebook", font_scale=1.5,
-                rc={"lines.linewidth": 2.5})
-
-imgpath='../data/pics/'
-
-# We'll generate an animation with matplotlib and moviepy.
-from moviepy.video.io.bindings import mplfig_to_npimage
-import moviepy.editor as mpy
-
-digits = load_digits()
-print(digits['DESCR'])
-
-nrows, ncols = 2, 5
-plt.figure(figsize=(6,3))
-plt.gray()
-for i in range(ncols * nrows):
-    ax = plt.subplot(nrows, ncols, i + 1)
-    ax.matshow(digits.images[i,...])
-    plt.xticks([]); plt.yticks([])
-    plt.title(digits.target[i])
-plt.savefig(imgpath + 'digits-generated.png', dpi=150)
-
-# We first reorder the data points according to the handwritten numbers.
-X = np.vstack([digits.data[digits.target==i]
-               for i in range(10)])
-y = np.hstack([digits.target[digits.target==i]
-               for i in range(10)])
-
-digits_proj = TSNE(random_state=RS).fit_transform(X)
+digits_proj = TSNE(random_state=RS).fit_transform(X_data)
 
 def scatter(x, colors):
     # We choose a color palette with seaborn.
@@ -91,36 +112,13 @@ def _joint_probabilities_constant_sigma(D, sigma):
     P /= np.sum(P, axis=1)
     return P
 
-scatter(digits_proj, y)
-plt.savefig(imgpath + 'digits_tsne-generated.png', dpi=120)
+scatter(digits_proj, y_data)
+plt.savefig(imgpath + 'MNIST-digits_tsne-generated.png', dpi=120)
 
-# Pairwise distances between all data points.
-D = pairwise_distances(X, squared=True)
-# Similarity with constant sigma.
-P_constant = _joint_probabilities_constant_sigma(D, .002)
-# Similarity with variable sigma.
-P_binary = _joint_probabilities(D, 30., False)
-# The output of this function needs to be reshaped to a square matrix.
-P_binary_s = squareform(P_binary)
-
-plt.figure(figsize=(12, 4))
-pal = sns.light_palette("blue", as_cmap=True)
-
-plt.subplot(131)
-plt.imshow(D[::10, ::10], interpolation='none', cmap=pal)
-plt.axis('off')
-plt.title("Distance matrix", fontdict={'fontsize': 16})
-
-plt.subplot(132)
-plt.imshow(P_constant[::10, ::10], interpolation='none', cmap=pal)
-plt.axis('off')
-plt.title("$p_{j|i}$ (constant $\sigma$)", fontdict={'fontsize': 16})
-
-plt.subplot(133)
-plt.imshow(P_binary_s[::10, ::10], interpolation='none', cmap=pal)
-plt.axis('off')
-plt.title("$p_{j|i}$ (variable $\sigma$)", fontdict={'fontsize': 16})
-plt.savefig(imgpath + 'similarity-generated.png', dpi=120)
+sns.set_style('darkgrid')
+sns.set_palette('muted')
+sns.set_context("notebook", font_scale=1.5,
+                rc={"lines.linewidth": 2.5})
 
 # This list will contain the positions of the map points at every iteration.
 positions = []
@@ -196,26 +194,26 @@ def _gradient_descent(objective, p0, it, n_iter, objective_error=None,
 
 sklearn.manifold.t_sne._gradient_descent = _gradient_descent
 
-X_proj = TSNE(random_state=RS).fit_transform(X)
+X_proj = TSNE(random_state=RS).fit_transform(X_data)
 
 X_iter = np.dstack(position.reshape(-1, 2)
                    for position in positions)
 
-f, ax, sc, txts = scatter(X_iter[..., -1], y)
+f, ax, sc, txts = scatter(X_iter[..., -1], y_data)
 
 def make_frame_mpl(t):
     i = int(t*40)
     x = X_iter[..., i]
     sc.set_offsets(x)
     for j, txt in zip(range(10), txts):
-        xtext, ytext = np.median(x[y == j, :], axis=0)
+        xtext, ytext = np.median(x[y_data == j, :], axis=0)
         txt.set_x(xtext)
         txt.set_y(ytext)
     return mplfig_to_npimage(f)
 
 animation = mpy.VideoClip(make_frame_mpl,
                           duration=X_iter.shape[2]/40.)
-animation.write_gif(imgpath + "animation-94a2c1ff.gif", fps=20)
+animation.write_gif(imgpath + "MNIST-animation-94a2c1ff.gif", fps=20)
 
 n = 1. / (pdist(X_iter[..., -1], "sqeuclidean") + 1)
 Q = n / (2.0 * np.sum(n))
@@ -237,7 +235,7 @@ def make_frame_mpl(t):
 
 animation = mpy.VideoClip(make_frame_mpl,
                           duration=X_iter.shape[2]/40.)
-animation.write_gif(imgpath + "animation_matrix-da2d5f1b.gif", fps=20)
+animation.write_gif(imgpath + "MNIST-animation_matrix-da2d5f1b.gif", fps=20)
 
 npoints = 1000
 plt.figure(figsize=(15, 4))
@@ -258,7 +256,7 @@ for i, D in enumerate((2, 5, 10)):
     ax.hist(norm(points, axis=1),
             bins=np.linspace(0., 1., 50))
     ax.set_title('D=%d' % D, loc='left')
-plt.savefig(imgpath + "spheres-generated.png", dpi=100, bbox_inches="tight")
+plt.savefig(imgpath + "MNIST-spheres-generated.png", dpi=100, bbox_inches="tight")
 
 z = np.linspace(0., 5., 1000)
 gauss = np.exp(-z**2)
@@ -266,6 +264,5 @@ cauchy = 1/(1+z**2)
 plt.plot(z, gauss, label='Gaussian distribution')
 plt.plot(z, cauchy, label='Cauchy distribution')
 plt.legend()
-plt.savefig(imgpath + 'distributions-generated.png', dpi=100)
-
+plt.savefig(imgpath + 'MNIST-distributions-generated.png', dpi=100)
 

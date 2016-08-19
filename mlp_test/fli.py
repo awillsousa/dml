@@ -19,7 +19,7 @@ def getBestShift(img):
     shifty = np.round(rows/2.0-cy).astype(int)
     return shiftx,shifty
 
-def processImg(img_dirpath, img_filename , save="True", save_path="../data/transform/", flatten = True):
+def processImg(img_dirpath, img_filename , save=False, save_path="../data/transform/", flatten = True):
     formattedImg = cv2.imread(img_dirpath + "/" + img_filename, cv2.CV_LOAD_IMAGE_GRAYSCALE)
     formattedImg = cv2.resize(255 - formattedImg, (28, 28))
     (thresh, formattedImg) = cv2.threshold(formattedImg, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
