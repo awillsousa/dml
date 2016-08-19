@@ -6,9 +6,6 @@ import cPickle as pickle
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import matplotlib.cm as cm
-import sys
-
 
 train_len = 1000
 start=0

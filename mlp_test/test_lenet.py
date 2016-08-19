@@ -2,7 +2,7 @@ import cPickle as pickle
 from convolutional_mlp_modified import predict_on_mnist, predict_custom_image
 from mlp_utils import isqrt
 
-paramsFilename = '../data/models/best_model_convolutional_mlp_1000_zero.pkl'
+paramsFilename = '../data/models/best_model_convolutional_mlp_5_zero.pkl'
 
 # Test 1
 from os import listdir
@@ -20,13 +20,13 @@ def test_1(path = '../data/custom'):
         n_right += predict_custom_image(params,file, testImgFilenameDir = path)
     print(str(n_tot - n_right) + ' wrong predictions out of ' + str(n_tot))
 
-test_1(path = '../data/pics/uic')
+#test_1(path = '../data/pics/uic')
 
 # Test 2
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-def test_2(filename, data_set='validation',  diagnosys=True, showImages= True):
+def test_2(filename, data_set='test',  diagnosys=True, showImages= True):
     wrongpredictions = predict_on_mnist(filename, test_data=data_set, saveToFile=False,  diagnose=diagnosys)
     if showImages:
         i = 1
@@ -43,6 +43,6 @@ def test_2(filename, data_set='validation',  diagnosys=True, showImages= True):
         plt.tight_layout()
         plt.show()
 
-#test_2(filename  = paramsFilename )
+test_2(filename  = paramsFilename )
 
 #predict_on_mnist(paramsFilename, test_data='validation', saveToFile=False)

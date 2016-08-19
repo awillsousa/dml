@@ -22,18 +22,18 @@ img_val_1 = train_data[1][index_1]
 img_arr_2 = train_data[0][index_2].reshape((28, 28))
 img_val_2 = train_data[1][index_2]
 import scipy.misc
-ret, thresh = cv2.threshold(np.uint8(img_arr_1*255),127,255,cv2.THRESH_BINARY)
-ret, thresh2 = cv2.threshold(np.uint8(img_arr_2 * 255), 127, 255,0)
-contours,hierarchy = cv2.findContours(thresh, 2, 1)
+ret, thresh_1 = cv2.threshold(np.uint8(img_arr_1 * 255).copy(), 127, 255, cv2.THRESH_BINARY)
+ret, thresh2 = cv2.threshold(np.uint8(img_arr_2 * 255).copy(), 127, 255,0)
+contours,hierarchy = cv2.findContours(thresh_1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 cnt1 = contours[0]
-contours,hierarchy = cv2.findContours(thresh2, 2, 1)
+contours,hierarchy = cv2.findContours(thresh2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 cnt2 = contours[0]
 formatt = "{:4.2f}"
 match_I1 = formatt.format(matchShapes(cnt1, cnt2, cv2.cv.CV_CONTOURS_MATCH_I1,0))
 match_I2 = formatt.format(matchShapes(cnt1, cnt2, cv2.cv.CV_CONTOURS_MATCH_I2,0))
 match_I3 = formatt.format(matchShapes(cnt1, cnt2, cv2.cv.CV_CONTOURS_MATCH_I3,0))
-plt.suptitle("Comparing two images - match_I1 = "+ match_I1+ " match_I2 = "+ match_I2
-             + " match_I3 = " + match_I3 +'\n Structural similarity = ' + formatt.format(compare_ssim(img_arr_1, img_arr_2)))
+plt.suptitle("Comparing two images - match_I1 = "+ match_I1+ " - match_I2 = "+ match_I2
+             + " - match_I3 = " + match_I3 +'\n Structural similarity = ' + formatt.format(compare_ssim(img_arr_1, img_arr_2)))
 plt.subplot(1, 2, 1)
 plt.title(str(img_val_1))
 fig = plt.imshow(img_arr_1, cmap=cm.binary)

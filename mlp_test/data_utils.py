@@ -6,6 +6,7 @@ import os
 import cPickle as pickle
 from scipy import ndimage
 import fli
+import scipy.ndimage.interpolation as scipint
 
 from os import listdir
 from os import remove
@@ -28,6 +29,12 @@ def get_blurred_vector(vector, blur=1):
 def get_blurred_sets(set_x, set_y, blur=1):
     return np.apply_along_axis(get_blurred_vector, axis=1, arr=set_x, blur=blur), set_y
 
+def get_rotated_vector(vector, angle=0):
+    return scipint.rotate(vector.reshape(28, 28), angle, order=0, reshape=False).flatten()
+
+def get_rotated_sets(set_x, set_y, angle=0):
+    return np.apply_along_axis(get_rotated_vector, axis=1, arr=set_x, angle=angle), set_y
+
 #deletes the blurred image files in the path directori
 def remove_blur_files(path=path):
     files = [f for f in listdir(path) if isfile(join(path, f)) and 'blur' in f]
@@ -45,7 +52,7 @@ def create_blur_files(path=path, blur=1):
 
 def save_model(params, epoch=-1 , best_validation_loss=-1, test_score=-1, namestub='test'
                ,randomInit=False, add_blurs=False, testrun=False, logfilename='testLog.log',
-               endrun=False):
+               endrun=False, annotation = ''):
     blur = ''
     last = ''
     if randomInit:
@@ -57,7 +64,7 @@ def save_model(params, epoch=-1 , best_validation_loss=-1, test_score=-1, namest
     if testrun:
         last = '_test'
 
-    savedFileName = namestub + str(epoch) + init_1 + blur + last +'.pkl'
+    savedFileName = namestub + str(epoch) + init_1 + annotation + blur + last +'.pkl'
     gg = open(savedFileName, 'wb')
     pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
     gg.close()

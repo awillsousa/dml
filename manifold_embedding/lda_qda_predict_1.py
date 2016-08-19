@@ -5,8 +5,6 @@ import gzip
 import cPickle as pickle
 from sklearn import discriminant_analysis
 
-
-
 showAll = True
 plotVertexImages = False
 selected_length_train = 50000

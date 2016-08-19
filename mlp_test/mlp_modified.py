@@ -44,7 +44,7 @@ import cPickle as pickle
 
 import logging
 
-from data_utils import get_blurred_sets, shuffle_in_unison, save_model, load_params
+from data_utils import get_blurred_sets, get_rotated_sets,shuffle_in_unison, save_model, load_params
 
 add_blurs = False
 testrun = False
@@ -365,7 +365,7 @@ class LogisticRegression(object):
             raise NotImplementedError()
 
 
-def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False):
+def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False, angles = []):
     ''' Loads the dataset
 
     :type dataset: string
@@ -413,6 +413,10 @@ def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False):
     if add_the_blurs:
         blur_set = get_blurred_sets(train_set[0], train_set[1], blur)
         train_set = shuffle_in_unison(numpy.concatenate((train_set[0], blur_set[0])), numpy.concatenate((train_set[1], blur_set[1])))
+    if len(angles)>0:
+        for the_angle in angles:
+            rotated_set = get_rotated_sets(train_set[0], train_set[1], the_angle)
+            train_set = shuffle_in_unison(numpy.concatenate((train_set[0], rotated_set[0])),                                          numpy.concatenate((train_set[1], rotated_set[1])))
     if replace_images:
         test_set_x, test_set_y = train_set
         j = 0
