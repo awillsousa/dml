@@ -11,6 +11,9 @@ from sklearn.manifold import TSNE
 
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as PathEffects
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 
 imgpath='../data/pics/'
@@ -24,10 +27,9 @@ target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 metrics = ['euclidean', 'l1', 'l2', 'manhattan','braycurtis', 'canberra', 'chebyshev', 'correlation', 'dice', 'hamming', 'jaccard', 'kulsinski', 'matching', 'minkowski', 'rogerstanimoto', 'russellrao', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'yule']
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-data_set = pickle.load(f)[0]
-f.close()
+
+data_set = load_mnist()[0]
+
 
 chosens = [(index,data_set[1][index])  for index in range(start, start + testlen) if data_set[1][index] in target_values]
 

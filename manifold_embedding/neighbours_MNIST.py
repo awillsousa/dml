@@ -1,11 +1,13 @@
 # TSNE-plotting for different distances
 from __future__ import division
 
-import gzip
-import cPickle as pickle
 import numpy as np
 
 import matplotlib.pyplot as plt
+
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 imgpath='../data/pics/'
 
@@ -23,10 +25,7 @@ metrics = ['braycurtis', 'canberra', 'chebyshev', 'cityblock', 'correlation',
 
 # The metrics 'mahalanobis', 'seuclidean', 'cosine' are not directly usable
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-train_data, validation_data, test_data = pickle.load(f)
-f.close()
+train_data, validation_data, test_data = load_mnist()
 
 chosens = [(index, train_data[1][index]) for index in range(start, start + train_len) if train_data[1][index] in target_values]
 

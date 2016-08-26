@@ -1,9 +1,10 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
-import gzip
-import cPickle as pickle
 from time import time
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 from manifold_embedding_1 import ldp, tsne, lle, cse, trt, pca, md5, trt
 
@@ -38,10 +39,8 @@ target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 
 if __name__ == '__main__':
-    filename = "../data/mnist.pkl.gz"
-    f = gzip.open(filename, 'rb')
-    train_data = pickle.load(f)[0]
-    f.close()
+    train_data = load_mnist()[0]
+
 
     chosens = [index for index in range(start, start + testlen) if train_data[1][index] in target_values]
 

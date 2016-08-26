@@ -1,8 +1,12 @@
 import gzip
 import cPickle
-import numpy as np
-with gzip.open('../data/mnist.pkl.gz', 'rb') as f:
-    train_set, valid_set, test_set = cPickle.load(f)
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
+
+
+train_set, valid_set, test_set = load_mnist()
+
 
 chosen_index = 1250
 

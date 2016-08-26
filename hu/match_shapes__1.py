@@ -1,19 +1,18 @@
 from __future__ import division
 
 import numpy as np
-import gzip
-import cPickle as pickle
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import cv2
 from cv2 import matchShapes
 from skimage.measure import compare_ssim
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-train_data, verificatio_data, test_data = pickle.load(f)
-f.close()
+train_data, verificatio_data, test_data = load_mnist()
+
 
 index_1 = 7
 index_2 = 10

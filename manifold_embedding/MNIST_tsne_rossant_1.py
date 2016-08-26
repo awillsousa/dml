@@ -1,9 +1,8 @@
 # cp. https://www.oreilly.com/learning/an-illustrated-introduction-to-the-t-sne-algorithm
 
-import numpy as np
-import matplotlib.pyplot as plt
-import gzip
-import cPickle as pickle
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 import seaborn as sns
 
@@ -32,10 +31,8 @@ start=0
 
 target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-data_set = pickle.load(f)[0]
-f.close()
+data_set = load_mnist()[0]
+
 
 chosens = [(index,data_set[1][index])  for index in range(start, start + testlen) if data_set[1][index] in target_values]
 

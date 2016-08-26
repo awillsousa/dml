@@ -52,7 +52,7 @@ logfilename= '../logs/mlp_convolutional_modified.log'
 
 activation_convmlp= T.nnet.relu #T.tanh
 n_epochs_convmlp=1000
-saveepochs_convmlp = numpy.arange(0, n_epochs_convmlp + 1, 1)
+saveepochs_convmlp = numpy.arange(0, n_epochs_convmlp + 1, 10)
 
 add_blurs = False
 blur = 2

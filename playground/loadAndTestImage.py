@@ -10,10 +10,13 @@ filepath = "../data/savedImage_" + str(chosen_number) + ".p"
 test_saved = cPickle.load( open(filepath, "rb" ) )
 test_x_saved, test_y_saved = test_saved
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-test_data = cPickle.load(f)[2]
-f.close()
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
+
+
+test_data = load_mnist[2]
+
 
 test_data[0][0] = test_x_saved
 test_data[1][0] = test_y_saved #The result is 1

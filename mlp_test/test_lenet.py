@@ -2,7 +2,7 @@ import cPickle as pickle
 from convolutional_mlp_modified import predict_on_mnist, predict_custom_image
 from mlp_utils import isqrt
 
-paramsFilename = '../data/models/best_model_convolutional_mlp_5_zero.pkl'
+paramsFilename = '../data/models/best_model_convolutional_mlp_700_zero_angles_10_-10_.pkl'
 
 # Test 1
 from os import listdir

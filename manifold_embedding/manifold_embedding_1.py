@@ -8,6 +8,9 @@ from sklearn import (manifold, datasets, decomposition, ensemble,
                      discriminant_analysis, random_projection)
 from scipy.spatial import ConvexHull
 from time import time
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 
 showAll = True
@@ -150,10 +153,7 @@ def tsne(X, nr_components=2):
 
 
 if __name__ == '__main__':
-    filename = "../data/mnist.pkl.gz"
-    f = gzip.open(filename, 'rb')
-    train_data = pickle.load(f)[0]
-    f.close()
+    train_data = load_mnist()[0]
 
     chosens = [index for index in range(start, start + testlen) if train_data[1][index] in target_values]
 

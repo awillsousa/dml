@@ -1,9 +1,10 @@
 from __future__ import division
 
 import numpy as np
-import gzip
-import cPickle as pickle
 from sklearn import discriminant_analysis
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 showAll = True
 plotVertexImages = False
@@ -14,10 +15,7 @@ selected_start_test=0
 
 target_values = np.array([ 2, 3, 5])
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-train_data, verificatio_data, test_data = pickle.load(f)
-f.close()
+train_data, verificatio_data, test_data = load_mnist()
 
 selected_train = [index for index in range(selected_start_train, selected_start_train + selected_length_train) if train_data[1][index] in target_values]
 selected_test = [index for index in range(selected_start_test, selected_start_test + selected_length_test) if test_data[1][index] in target_values]

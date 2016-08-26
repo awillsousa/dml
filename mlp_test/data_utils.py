@@ -6,6 +6,7 @@ import os
 import cPickle as pickle
 from scipy import ndimage
 import fli
+import gzip
 import scipy.ndimage.interpolation as scipint
 
 from os import listdir
@@ -90,3 +91,17 @@ def load_params(filename):
 
 def epoch_from_filename(filename):
     return filter(str.isdigit, filename)
+
+def load_mnist(mnist_path="../data/mnist.pkl.gz"):
+    data_dir, data_file = os.path.split(mnist_path)
+    if (not os.path.isfile(mnist_path)) and data_file == 'mnist.pkl.gz':
+        from six.moves import urllib
+        origin = (
+            'http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz'
+        )
+        print('Downloading data from %s' % origin)
+        urllib.request.urlretrieve(origin, mnist_path)
+    f = gzip.open(mnist_path, 'rb')
+    dataset = pickle.load(f)
+    f.close()
+    return dataset

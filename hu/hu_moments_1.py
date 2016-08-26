@@ -6,6 +6,9 @@ import cPickle as pickle
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 train_len = 1000
 start=0
@@ -14,10 +17,8 @@ the_colors = [ 'blue', 'green', 'red', 'cyan', 'magenta',  'yellow', 'darkblue',
 
 showSequence = True
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-data_set = pickle.load(f)[0]
-f.close()
+data_set = load_mnist()[0]
+
 
 target_values = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 

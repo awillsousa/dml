@@ -4,15 +4,14 @@ import numpy as np
 import gzip
 import cPickle as pickle
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import cv2
+import sys
+sys.path.insert(0, '../mlp_test')
+from  data_utils import load_mnist
 
 thresholds = [cv2.THRESH_BINARY, cv2.THRESH_BINARY_INV, cv2.THRESH_TRUNC, cv2.THRESH_TOZERO, cv2.THRESH_TOZERO_INV]
 
-filename = "../data/mnist.pkl.gz"
-f = gzip.open(filename, 'rb')
-train_data, verificatio_data, test_data = pickle.load(f)
-f.close()
+train_data, verificatio_data, test_data = load_mnist()
 
 index_1 = 7
 img_arr_1 = train_data[0][index_1].reshape((28, 28))
