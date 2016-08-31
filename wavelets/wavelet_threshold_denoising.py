@@ -62,16 +62,19 @@ def denoise(noisy_img, mode, level, noiseSigma):
 def add_noise(img, noiseSigma = noiseSigma ):
     return  img + np.random.normal(0, noiseSigma, size=img.shape)
 
-img1 = regularize_image(cv2.imread(leo_path))
-img2 = regularize_image(cv2.imread(ven_path))
+def test():
+    img1 = regularize_image(cv2.imread(leo_path))
+    img2 = regularize_image(cv2.imread(ven_path))
 
-wavImg2 = w2dReg(img2, mode=mode, level=level)
-wavImg1 = w2dReg(img1, mode=mode, level=level)
+    wavImg2 = w2dReg(img2, mode=mode, level=level)
+    wavImg1 = w2dReg(img1, mode=mode, level=level)
 
 
-parstr = 'noiseSigma='+str(noiseSigma) + ' , mode=' + mode + ' , level=' +str(wavImg1[2])
+    parstr = 'noiseSigma='+str(noiseSigma) + ' , mode=' + mode + ' , level=' +str(wavImg1[2])
 
-show_pics([img1, wavImg1[0], wavImg1[1], img2, wavImg2[0], wavImg2[1]], label=parstr)
+    show_pics([img1, wavImg1[0], wavImg1[1], img2, wavImg2[0], wavImg2[1]], label=parstr)
+
+test()
 
 
 
