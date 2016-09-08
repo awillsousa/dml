@@ -35,7 +35,7 @@ import numpy
 
 import cPickle as pickle
 
-from data_utils import save_model, load_params
+from data_utils import save_model, load_params, epoch_from_filename
 
 import theano
 import theano.tensor as T
@@ -58,11 +58,11 @@ add_blurs = False
 blur = 2
 testrun= False
 loadparams = False
-rotation_angles = [10, -10]
+rotation_angles = [10, 5, -5, -10]
 #If loadparams is True, then the parameters are loaded from this file,
 # n_epochs_mlp must be greater than the starting epoch number,
 # which is extracted from the paramsfilename.
-paramsfilename = '../data/models/best_model_convolutional_mlp_250_zero.pkl'
+paramsfilename = '../data/models/best_model_convolutional_mlp_110_pars__zero_angles_10_5_-5_-10_.pkl'
 
 
 class LeNetConvPoolLayer(object):
@@ -334,7 +334,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=n_epochs_convmlp, dataset='mnist
 
     epoch = 0
     if loadparams:
-        epoch = int(filter(str.isdigit, paramsfilename))
+        epoch = epoch_from_filename(paramsfilename)
     done_looping = False
 
     while (epoch < n_epochs) and (not done_looping):

@@ -65,7 +65,7 @@ def save_model(params, epoch=-1 , best_validation_loss=-1, test_score=-1, namest
     if testrun:
         last = '_test'
 
-    savedFileName = namestub + str(epoch) + init_1 + annotation + blur + last +'.pkl'
+    savedFileName = namestub + str(epoch) +"_pars_"+ init_1 + annotation + blur + last +'.pkl'
     gg = open(savedFileName, 'wb')
     pickle.dump(params, gg, protocol=pickle.HIGHEST_PROTOCOL)
     gg.close()
@@ -90,7 +90,7 @@ def load_params(filename):
     return params
 
 def epoch_from_filename(filename):
-    return filter(str.isdigit, filename)
+    return int(filter(str.isdigit, filename.split("pars")[0]))
 
 def load_mnist(mnist_path="../data/mnist.pkl.gz"):
     data_dir, data_file = os.path.split(mnist_path)

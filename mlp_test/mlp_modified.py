@@ -44,7 +44,7 @@ import cPickle as pickle
 
 import logging
 
-from data_utils import get_blurred_sets, get_rotated_sets,shuffle_in_unison, save_model, load_params
+from data_utils import get_blurred_sets, get_rotated_sets,shuffle_in_unison, save_model, load_params, epoch_from_filename
 
 add_blurs = False
 testrun = False
@@ -413,10 +413,11 @@ def load_data(dataset, add_the_blurs=False, blur=1, replace_images = False, angl
     if add_the_blurs:
         blur_set = get_blurred_sets(train_set[0], train_set[1], blur)
         train_set = shuffle_in_unison(numpy.concatenate((train_set[0], blur_set[0])), numpy.concatenate((train_set[1], blur_set[1])))
-    if len(angles)>0:
-        for the_angle in angles:
-            rotated_set = get_rotated_sets(train_set[0], train_set[1], the_angle)
-            train_set = shuffle_in_unison(numpy.concatenate((train_set[0], rotated_set[0])),                                          numpy.concatenate((train_set[1], rotated_set[1])))
+    the_set =  train_set
+    for the_angle in angles:
+        rotated_set = get_rotated_sets(train_set[0], train_set[1], the_angle)
+        the_set = numpy.concatenate((the_set[0], rotated_set[0])), numpy.concatenate((the_set[1], rotated_set[1]))
+    train_set = shuffle_in_unison(the_set[0], the_set[1])
     if replace_images:
         test_set_x, test_set_y = train_set
         j = 0
@@ -715,7 +716,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=n_epochs_m
 
     epoch = 0
     if loadparams:
-        epoch = int(filter(str.isdigit, paramsfilename))
+        epoch = epoch_from_filename(paramsfilename)
     done_looping = False
 
     while (epoch < n_epochs) and (not done_looping):
