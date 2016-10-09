@@ -1,6 +1,6 @@
 from security import Stock, Holding
 from invest import Investor
-from market import Market, trade
+from market import Market, trade, create_market_securities
 
 sec_1 = Stock('A', 10.0)
 sec_2 = Stock('B', 11.0)
@@ -86,6 +86,9 @@ print("Seller's cash after trade =" + str(investor_2.cash))
 print("Seller's securities value after trade=" + str(investor_2.securities_value()))
 print("Buyer's's cash after trade =" + str(investor_1.cash))
 print("Buyers's securities value after trade=" + str(investor_1.securities_value()))
+
+quots = create_market_securities()
+print(len(quots))
 
 
 

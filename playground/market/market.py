@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class Market:
 
@@ -27,4 +28,14 @@ def trade(seller, buyer, trade_props):
                     buyer.cash >= trade_props.value()):
             buyer.buy_sec(trade_props)
             seller.sell_sec(trade_props)
+
+def create_market_securities(nr_of_stocks=1000):
+    d ={}
+    for i in range(nr_of_stocks):
+        d[str(i)] =  1 + 10 * random.random()
+    return d
+
+
+
+
 
