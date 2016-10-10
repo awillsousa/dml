@@ -7,7 +7,7 @@ class Stock:
 
         self.id = id
         self.price = price
-        self.description = "Security"
+        self.description = "Stock"
         self.author = "laputian"
 
 class Holding:

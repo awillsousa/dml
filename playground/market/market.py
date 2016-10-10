@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from security import Stock
 
 class Market:
 
@@ -29,11 +30,18 @@ def trade(seller, buyer, trade_props):
             buyer.buy_sec(trade_props)
             seller.sell_sec(trade_props)
 
-def create_market_securities(nr_of_stocks=1000):
+def create_market_securities(nr_of_stocks=1):
     d ={}
     for i in range(nr_of_stocks):
-        d[str(i)] =  1 + 10 * random.random()
+        d[str(i)] =  Stock(id = i, price = 1 + 10 * random.random())
     return d
+
+def securities_tot_value(secs):
+    sum = 0.0
+    for value in secs.itervalues():
+        sum += value.price
+    return sum
+
 
 
 
