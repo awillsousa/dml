@@ -29,6 +29,10 @@ def trade(seller, buyer, trade_props):
                     buyer.cash >= trade_props.value()):
             buyer.buy_sec(trade_props)
             seller.sell_sec(trade_props)
+            return True
+        else:
+            return False
+
 
 def create_market_securities(nr_of_stocks=1):
     d ={}
